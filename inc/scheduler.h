@@ -116,6 +116,7 @@ typedef struct
 	uint8_t         id            ; // unique id for every event
 	EventCallback_t Callback      ; // event callback function
 	Time_t          StartTime     ; // event start time
+	Time_t          NextExcTime   ; // event next execution time
 	uint32_t        NumRepetetion ; // event number of repetition
 	uint32_t        Period        ; // event period in seconds
 	Priority_t      Priority      ; // event priority
