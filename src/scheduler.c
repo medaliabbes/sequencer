@@ -202,26 +202,26 @@ Sch_Error_t Scheduler_Execute_Event(uint8_t id)
 	/**SCH_ASSERT the event is not suspended before execution*/
 	if(Events[id].State == State_Suspended )
 	{
-		printf("Event Suspended\n\n") ;
+		SCH_LOG("Event Suspended\n\n") ;
 		return Sch_Error_Exc_Event_Suspended ;
 	}
 	/**SCH_ASSERT the event is not disabled before execution*/
 	if(Events[id].State   == State_Deleted )
 	{
-		printf("Event Deleted\n\n") ;
+		SCH_LOG("Event Deleted\n\n") ;
 	  return Sch_Error_Exc_Event_Deleted ;
 	}
 
 	/**Check event still has num rep to execute */
 	if(Events[id].NumRepetetion == 0)
 	{
-		printf("Event End Rep\n\n") ;
+		SCH_LOG("Event End Rep\n\n") ;
 		return Sch_Error_Exc_Event_Null_Rep ;
 	}
 	/**SCH_ASSERT Event CallBack is not NULL*/
 	if( Events[id].Callback == NULL)
 	{
-		printf("Event Null Callback\n\n") ;
+		SCH_LOG("Event Null Callback\n\n") ;
 		return Sch_Error_Exc_Event_Null_cbk ;
 	}
 	else{
@@ -360,7 +360,7 @@ Sch_Error_t Scheduler_Process()
   /**
    * @Note  : Events can be sorted based on they priority before execution
    */
-  printf("PROCESS : Number of event to exec : %d\n\n" , QueueSize) ;
+  SCH_LOG("PROCESS : Number of event to exec : %d\n\n" , QueueSize) ;
   for(int i = 0 ;i <QueueSize ;i++)
   {
 	  uint8_t event_id = MAX_EVENT_NUMBER ;
@@ -377,10 +377,10 @@ Sch_Error_t Scheduler_Process()
    {
  	  Scheduler_Execute_Event(NextEventId) ;
  	  Scheduler_Update_Event(NextEventId) ;
- 	  //printf("Event Executed\n\n") ;
+ 	  //SCH_LOG("Event Executed\n\n") ;
    }
    else{
- 	  printf("Missed Event Time\n") ;
+	   SCH_LOG("Missed Event Time\n") ;
    }
 #endif
 
@@ -388,7 +388,7 @@ Sch_Error_t Scheduler_Process()
   int selected_event = Scheduler_Get_Next_Event_Time(&NextEventTime) ;
   if(selected_event == MAX_EVENT_NUMBER)
   {
-	  printf("No next event is selected \n\n") ;
+	  SCH_LOG("No next event is selected \n\n") ;
   }
   SetAlarm(&NextEventTime) ;
   return Sch_Error_Ok ;
@@ -417,6 +417,6 @@ Sch_Error_t Scheduler_Resume_Event_API(uint8_t id)
 
 __attribute__((weak)) int Scheduler_Idle(void * args)
 {
-	printf("Scheduler idle task\n\n");
+	SCH_LOG("Scheduler idle task\n\n");
 	return 0 ;
 }
