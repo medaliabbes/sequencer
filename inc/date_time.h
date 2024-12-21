@@ -27,3 +27,35 @@
 *      Author: M.BEN ABBES
 *
 */
+
+#ifndef INC_DATE_TIME_H_
+#define INC_DATE_TIME_H_
+
+#include <stdint.h>
+#include <stdbool.h>
+
+typedef struct
+{
+	uint8_t second ;
+	uint8_t minute ;
+	uint8_t hour   ;
+	uint8_t day    ;
+	uint8_t month  ;
+	uint8_t year   ;
+}Time_t;
+
+bool     Is_Leap_Year(uint16_t year) ;
+
+uint16_t Get_Last_LeapYear(uint16_t year) ;
+
+uint8_t  Get_Month_Days(uint8_t month , uint16_t year) ;
+
+/**
+ * @brief return he number of seconds that have elapsed since January 1, 1970 (midnight UTC/GMT)
+ * Reference   : https://www.epochconverter.com/
+ * @param sTime      pointer to time struct to be converted
+ * @return uint32_t  seconds since January 1, 1970
+ */
+uint32_t Time_To_Epoch(Time_t * sTime);
+
+#endif /* INC_DATE_TIME_H_ */
