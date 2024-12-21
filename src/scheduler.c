@@ -277,7 +277,7 @@ void RTC_Alarm_IRQHandler(void)
 static void     Uint32ToTime(Time_t * sTime , uint32_t time_in_s)
 {
 	sTime->hour   = time_in_s / 3600 ;
-	sTime->minute = (time_in_s - (time_in_s / 3600)) / 60 ;
+	sTime->minute = (time_in_s - (sTime->hour  * 3600)) / 60 ;
 	sTime->second = time_in_s % 60 ;
 }
 
