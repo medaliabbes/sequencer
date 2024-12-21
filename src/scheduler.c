@@ -33,6 +33,7 @@
 static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime) ;
 static Sch_Error_t Scheduler_Add_Event(Event_t * Event) ;
 static bool IsEventTimeNow(uint8_t event_id);
+static void calculate_appropriete_next_time(Time_t * start_time , Time_t * next_time , uint32_t event_period) ;
 
 /**This function convert only time to uint32_t not the date*/
 static uint32_t TimeToUint32(Time_t * sTime);
@@ -57,9 +58,10 @@ Sch_Error_t Scheduler_Init(SchedulerInitConfig_t * Config)
 {
   SCH_ASSERT(Config != NULL , Sch_Error_Null_Pointer) ;
 
-  SCH_ASSERT(Config->GetTime != NULL , Sch_Error_Null_Pointer) ;
-  GetTime  =  Config->GetTime ;
   SCH_ASSERT(Config->SetAlarm != NULL , Sch_Error_Null_Pointer) ;
+  SCH_ASSERT(Config->GetTime  != NULL , Sch_Error_Null_Pointer) ;
+
+  GetTime  = Config->GetTime  ;
   SetAlarm = Config->SetAlarm ;
 
   Queue_Init(&EventQueue , EventQueueBuffer , 10) ;
@@ -88,6 +90,8 @@ uint8_t Scheduler_Add_Event_API(EventCallback_t EventHandler , Time_t * StartTim
     my_event.Period = Periode ;
     my_event.State     = State_Ready ;
     memcpy( (void*)&my_event.StartTime , (void *)StartTime , sizeof( Time_t));
+    /***NextExcTime should be calculated here**/
+    calculate_appropriete_next_time(&my_event.StartTime , &my_event.NextExcTime , Periode) ;
     my_event.MagicNumber = MAGIC_NUMBER ;
     Scheduler_Add_Event(&my_event) ;
     Time_t NextEventTime = { 0 };
@@ -95,9 +99,35 @@ uint8_t Scheduler_Add_Event_API(EventCallback_t EventHandler , Time_t * StartTim
     SCH_LOG("API start time %02d:%02d:%02d\n" , NextEventTime.hour ,
     		NextEventTime.minute ,
 			NextEventTime.second) ;
-    //set alarm to next event time
+    /**set alarm to next event time*/
     SetAlarm(&NextEventTime) ;
     return  my_event.id ;
+}
+
+/**
+ * get an event next execution time based on it's start time and period
+ * this function should only be called when adding an event
+ */
+static void calculate_appropriete_next_time(Time_t * start_time , Time_t * next_time , uint32_t event_period)
+{
+	Time_t CurrentTime = {0} ;
+	GetTime(&CurrentTime) ;
+
+
+	if( TimeToUint32(&CurrentTime) > TimeToUint32(start_time))
+	{   /**Start time in the paste */
+		/**Did the easiest thing , set next exc time to current time + period
+		 * No alignment is done , */
+		uint32_t event_next_exc_time = TimeToUint32(&CurrentTime) + event_period ;
+		Uint32ToTime(next_time, event_next_exc_time);
+		next_time->day   = start_time->day ;
+		next_time->month = start_time->month ;
+		next_time->year  = start_time->year ;
+	}
+	else
+	{	/**start time in the feature*/
+		memcpy(next_time , start_time , sizeof(Time_t));
+	}
 }
 
 static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime)
@@ -122,7 +152,7 @@ static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime)
 			continue ;
 		}
 
-		uint32_t ev_time = TimeToUint32(&Events[i].StartTime) ;
+		uint32_t ev_time = TimeToUint32(&Events[i].NextExcTime) ;
 
 		/**inside the if should be replaced or removed **/
 		if(ev_time < t_now )
@@ -144,18 +174,13 @@ static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime)
 			Queue_Push(&EventQueue , i) ;
 		}
 	}
-//	LOG("start time %02d:%02d:%02d\n" , Events[NextEventId].StartTime.hour ,
-//			Events[NextEventId].StartTime.minute ,
-//			Events[NextEventId].StartTime.second) ;
 
-//	if(NextEventId != MAX_EVENT_NUMBER){
-//	  memcpy(NextEventTime , &Events[NextEventId].StartTime , sizeof(Time_t)) ;
-//	}
 	/**this can be removed **/
 	if(selected_event != MAX_EVENT_NUMBER )
 	{
-		memcpy(NextEventTime , &Events[selected_event].StartTime , sizeof(Time_t)) ;
+		memcpy(NextEventTime , &Events[selected_event].NextExcTime , sizeof(Time_t)) ;
 	}
+
 	return selected_event ;
 }
 
@@ -242,8 +267,8 @@ Sch_Error_t Scheduler_Update_Event(uint8_t id )
 		Events[id].State = State_Deleted ;
 	}
 	else{
-	  uint32_t NextTime_s = TimeToUint32(&Events[id].StartTime) + Events[id].Period ;
-	  Uint32ToTime(&Events[id].StartTime , NextTime_s) ;
+	  uint32_t NextTime_s = TimeToUint32(&Events[id].NextExcTime) + Events[id].Period ;
+	  Uint32ToTime(&Events[id].NextExcTime , NextTime_s) ;
 //	  SCH_LOG("Event next Time %02d:%02d:%02d\n\n" , Events[id].StartTime.hour ,
 //												   Events[id].StartTime.minute ,
 //												   Events[id].StartTime.second);
@@ -291,33 +316,33 @@ static bool IsEventTimeNow(uint8_t event_id)
 	Time_t * t = &t_Now ;
 	SCH_LOG_TIME(t) ;
 
-	if(!(ev->StartTime.year == t_Now.year )&& !(ev->StartTime.year == SCH_EVERY_YEAR))
+	if(!(ev->NextExcTime.year == t_Now.year )&& !(ev->NextExcTime.year == SCH_EVERY_YEAR))
 	{
 		return false ;
 	}
 
-	if(!(ev->StartTime.month == t_Now.month )&& !(ev->StartTime.month == SCH_EVERY_MONTH))
+	if(!(ev->NextExcTime.month == t_Now.month )&& !(ev->NextExcTime.month == SCH_EVERY_MONTH))
 	{
 		return false ;
 	}
 
-	if(!(ev->StartTime.day == t_Now.day )&& !(ev->StartTime.day == SCH_EVERY_DAY))
+	if(!(ev->NextExcTime.day == t_Now.day )&& !(ev->NextExcTime.day == SCH_EVERY_DAY))
 	{
 		return false ;
 	}
 
-	if(!(ev->StartTime.hour == t_Now.hour )&& !(ev->StartTime.hour == SCH_EVERY_HOUR))
+	if(!(ev->NextExcTime.hour == t_Now.hour )&& !(ev->NextExcTime.hour == SCH_EVERY_HOUR))
 	{
 		return false ;
 	}
 
-	if(!(ev->StartTime.minute == t_Now.minute )&& !(ev->StartTime.minute == SCH_EVERY_MINUTE))
+	if(!(ev->NextExcTime.minute == t_Now.minute )&& !(ev->NextExcTime.minute == SCH_EVERY_MINUTE))
 	{
 		return false ;
 	}
 
 	/**CAN TOLERATE 1 OR 2 SECONDS*/
-	if(!(ev->StartTime.second == t_Now.second )&& !(ev->StartTime.second == SCH_EVERY_SECOND))
+	if(!(ev->NextExcTime.second == t_Now.second )&& !(ev->NextExcTime.second == SCH_EVERY_SECOND))
 	{
 		return false ;
 	}
