@@ -32,99 +32,99 @@
 
 bool Queue_Init(queue_t * Queue , uint8_t * buffer , uint8_t size)
 {
-	if( (buffer == NULL) || (size == 0) || (Queue == NULL))
-	{
-		return false ;
-	}
+  if( (buffer == NULL) || (size == 0) || (Queue == NULL))
+  {
+    return false ;
+  }
 
-	Queue->buffer   = buffer ;
-	Queue->size     = size   ;
-	Queue->WritePtr = buffer ;
-	return true ;
+  Queue->buffer   = buffer ;
+  Queue->size     = size   ;
+  Queue->WritePtr = buffer ;
+  return true ;
 }
 
 bool Queue_Push(queue_t * Queue , uint8_t element)
 {
 	/** This condition to prevent crashes*/
-	if(Queue == NULL)
-	{
-		return false ;
-	}
+  if(Queue == NULL)
+  {
+    return false ;
+  }
 
-	if(Queue->WritePtr >= (Queue->buffer + Queue->size))
-	{
-		return false ;
-	}
-	*(uint8_t*)(Queue->WritePtr) = element ;
-	Queue->WritePtr++ ;
-	return true ;
+  if(Queue->WritePtr >= (Queue->buffer + Queue->size))
+  {
+    return false ;
+  }
+  *(uint8_t*)(Queue->WritePtr) = element ;
+  Queue->WritePtr++ ;
+  return true ;
 }
 
 bool Queue_Pop(queue_t * Queue , uint8_t * element)
 {
-	/** This condition to prevent crashes*/
-	if(Queue == NULL)
-	{
-		return false ;
-	}
+  /** This condition to prevent crashes*/
+  if(Queue == NULL)
+  {
+    return false ;
+  }
 
-	if(Queue->WritePtr + 1 <= Queue->buffer )
-	{
-		return false ;
-	}
-	*element = *(uint8_t*)(Queue->WritePtr - 1) ;
-	Queue->WritePtr-- ;
-	return true ;
+  if(Queue->WritePtr + 1 <= Queue->buffer )
+  {
+    return false ;
+  }
+  *element = *(uint8_t*)(Queue->WritePtr - 1) ;
+  Queue->WritePtr-- ;
+  return true ;
 }
 
 bool Queue_Dump(queue_t * Queue )
 {
-	/** This condition to prevent crashes*/
-	if(Queue == NULL)
-	{
-		return false ;
-	}
+  /** This condition to prevent crashes*/
+  if(Queue == NULL)
+  {
+    return false ;
+  }
 
-	Queue->WritePtr = Queue->buffer ;
-	return true ;
+  Queue->WritePtr = Queue->buffer ;
+  return true ;
 }
 
 bool Queue_Is_Epmty(queue_t * Queue)
 {
-	/** This condition to prevent crashes*/
-	if(Queue == NULL)
-	{
-		return false ;
-	}
+  /** This condition to prevent crashes*/
+  if(Queue == NULL)
+  {
+    return false ;
+  }
 
-	if(Queue->WritePtr == Queue->buffer)
-	{
-		return true ;
-	}
-	return false ;
+  if(Queue->WritePtr == Queue->buffer)
+  {
+    return true ;
+  }
+  return false ;
 }
 
 int  Queue_Get_Size(queue_t * Queue)
 {
-	/** This condition to prevent crashes*/
-	if(Queue == NULL)
-	{
-		return false ;
-	}
-	int size = Queue->WritePtr - Queue->buffer ;
-	return size ;
+  /** This condition to prevent crashes*/
+  if(Queue == NULL)
+  {
+    return false ;
+  }
+  int size = Queue->WritePtr - Queue->buffer ;
+  return size ;
 }
 
 bool Queue_Deinit(queue_t * Queue)
 {
-	/** This condition to prevent crashes*/
-	if(Queue == NULL)
-	{
-		return false ;
-	}
+  /** This condition to prevent crashes*/
+  if(Queue == NULL)
+  {
+    return false ;
+  }
 
-	Queue->buffer   = NULL ;
-	Queue->size     = 0    ;
-	Queue->WritePtr = NULL ;
-	return true ;
+  Queue->buffer   = NULL ;
+  Queue->size     = 0    ;
+  Queue->WritePtr = NULL ;
+  return true ;
 }
