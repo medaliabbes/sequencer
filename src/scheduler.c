@@ -52,8 +52,6 @@ static queue_t EventQueue  = {0};
 
 static uint8_t EventQueueBuffer[10] = {0} ;
 
-extern RTC_HandleTypeDef hrtc;
-
 Sch_Error_t Scheduler_Init(SchedulerInitConfig_t * Config)
 {
   SCH_ASSERT(Config != NULL , Sch_Error_Null_Pointer) ;
@@ -280,12 +278,12 @@ static uint32_t TimeToUint32(Time_t * sTime)
 /**
   * @brief This function handles RTC alarms (A and B) interrupt through EXTI line 17.
   */
-void RTC_Alarm_IRQHandler(void)
+void RTC_INTERRUPT_ROUTINE(void)
 {
   /* USER CODE BEGIN RTC_Alarm_IRQn 0 */
 
   /* USER CODE END RTC_Alarm_IRQn 0 */
-  HAL_RTC_AlarmIRQHandler(&hrtc);
+  RTC_INTERRUPT_HANDLER() ;
   /* USER CODE BEGIN RTC_Alarm_IRQn 1 */
   Scheduler_Process() ;
   /* USER CODE END RTC_Alarm_IRQn 1 */
