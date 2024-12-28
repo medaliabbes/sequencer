@@ -52,6 +52,7 @@ typedef enum {
   Sch_Error_Exc_Event_Suspended  , /**<Event Suspended>*/
   Sch_Error_Exc_Event_Null_Rep   , /**<No more repetition >*/
   Sch_Error_Exc_Event_Null_cbk   , /**<Null Callback>*/
+  Sch_Error_Core_Failed          , /**<Scheduler will fail no more interrupts>*/
 }Sch_Error_t;
 
 #define  MAX_EVENT_NUMBER  100
