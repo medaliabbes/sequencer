@@ -233,7 +233,7 @@ void Scheduler_Event_Set_Args(uint8_t id , void * arg1, void * arg2)
 
 Event_t * Scheduler_Get_Event_By_Id(uint8_t id)
 {
-	return NULL ;
+  return NULL ;
 }
 
 
@@ -244,31 +244,28 @@ Event_t * Scheduler_Get_Event_By_Id(uint8_t id)
  */
 Sch_Error_t Scheduler_Update_Event(uint8_t id )
 {
-	SCH_ASSERT(id < MAX_EVENT_NUMBER  , Sch_Error_Invalid_Id) ;
+  SCH_ASSERT(id < MAX_EVENT_NUMBER  , Sch_Error_Invalid_Id) ;
 
-	if(Events[id].NumRepetetion == 0)
-	{
-		return Sch_Error_Null_Repetition ;
-	}
+  if(Events[id].NumRepetetion == 0)
+  {
+    return Sch_Error_Null_Repetition ;
+  }
 
-	if(Events[id].NumRepetetion != SCH_REPETITION_INF){
-		Events[id].NumRepetetion-- ;
-	}
-	/**When an event reaches it number of repetition
-	 * times it will be deleted
-	 */
-	if(Events[id].NumRepetetion == 0)
-	{
-		Events[id].State = State_Deleted ;
-	}
-	else{
-	  uint32_t NextTime_s = TimeToUint32(&Events[id].NextExcTime) + Events[id].Period ;
-	  Uint32ToTime(&Events[id].NextExcTime , NextTime_s) ;
-//	  SCH_LOG("Event next Time %02d:%02d:%02d\n\n" , Events[id].StartTime.hour ,
-//												   Events[id].StartTime.minute ,
-//												   Events[id].StartTime.second);
-	}
-	return Sch_Error_Ok ;
+  if(Events[id].NumRepetetion != SCH_REPETITION_INF){
+     Events[id].NumRepetetion-- ;
+  }
+  /**When an event reaches it number of repetition
+    * times it will be deleted
+    */
+  if(Events[id].NumRepetetion == 0)
+  {
+    Events[id].State = State_Deleted ;
+  }
+  else{
+    uint32_t NextTime_s = TimeToUint32(&Events[id].NextExcTime) + Events[id].Period ;
+    Uint32ToTime(&Events[id].NextExcTime , NextTime_s) ;
+  }
+  return Sch_Error_Ok ;
 }
 
 /**
@@ -276,8 +273,8 @@ Sch_Error_t Scheduler_Update_Event(uint8_t id )
  */
 static uint32_t TimeToUint32(Time_t * sTime)
 {
-	uint32_t ret = sTime->second + (sTime->minute * 60) + (sTime->hour * 60 * 60);
-	return ret ;
+  uint32_t ret = sTime->second + (sTime->minute * 60) + (sTime->hour * 60 * 60);
+  return ret ;
 }
 
 /**
@@ -296,53 +293,51 @@ void RTC_Alarm_IRQHandler(void)
 
 static void     Uint32ToTime(Time_t * sTime , uint32_t time_in_s)
 {
-	sTime->hour   = time_in_s / 3600 ;
-	sTime->minute = (time_in_s - (sTime->hour  * 3600)) / 60 ;
-	sTime->second = time_in_s % 60 ;
+  sTime->hour   = time_in_s / 3600 ;
+  sTime->minute = (time_in_s - (sTime->hour  * 3600)) / 60 ;
+  sTime->second = time_in_s % 60 ;
 }
 
 static bool IsEventTimeNow(uint8_t event_id)
 {
-	Time_t t_Now = { 0 } ;
+  Time_t t_Now = { 0 } ;
+  Event_t * ev = &Events[event_id] ;
 
-	Event_t * ev = &Events[event_id] ;
+  GetTime(&t_Now) ;
+  Time_t * t = &t_Now ;
+  SCH_LOG_TIME(t) ;
 
-	GetTime(&t_Now) ;
-	Time_t * t = &t_Now ;
-	SCH_LOG_TIME(t) ;
+  if(!(ev->NextExcTime.year == t_Now.year )&& !(ev->NextExcTime.year == SCH_EVERY_YEAR))
+  {
+    return false ;
+  }
 
-	if(!(ev->NextExcTime.year == t_Now.year )&& !(ev->NextExcTime.year == SCH_EVERY_YEAR))
-	{
-		return false ;
-	}
+  if(!(ev->NextExcTime.month == t_Now.month )&& !(ev->NextExcTime.month == SCH_EVERY_MONTH))
+  {
+    return false ;
+  }
 
-	if(!(ev->NextExcTime.month == t_Now.month )&& !(ev->NextExcTime.month == SCH_EVERY_MONTH))
-	{
-		return false ;
-	}
+  if(!(ev->NextExcTime.day == t_Now.day )&& !(ev->NextExcTime.day == SCH_EVERY_DAY))
+  {
+    return false ;
+  }
 
-	if(!(ev->NextExcTime.day == t_Now.day )&& !(ev->NextExcTime.day == SCH_EVERY_DAY))
-	{
-		return false ;
-	}
+  if(!(ev->NextExcTime.hour == t_Now.hour )&& !(ev->NextExcTime.hour == SCH_EVERY_HOUR))
+  {
+    return false ;
+  }
 
-	if(!(ev->NextExcTime.hour == t_Now.hour )&& !(ev->NextExcTime.hour == SCH_EVERY_HOUR))
-	{
-		return false ;
-	}
+  if(!(ev->NextExcTime.minute == t_Now.minute )&& !(ev->NextExcTime.minute == SCH_EVERY_MINUTE))
+  {
+    return false ;
+  }
 
-	if(!(ev->NextExcTime.minute == t_Now.minute )&& !(ev->NextExcTime.minute == SCH_EVERY_MINUTE))
-	{
-		return false ;
-	}
-
-	/**CAN TOLERATE 1 OR 2 SECONDS*/
-	if(!(ev->NextExcTime.second == t_Now.second )&& !(ev->NextExcTime.second == SCH_EVERY_SECOND))
-	{
-		return false ;
-	}
-
-	return true ;
+  /**CAN TOLERATE 1 OR 2 SECONDS*/
+  if(!(ev->NextExcTime.second == t_Now.second )&& !(ev->NextExcTime.second == SCH_EVERY_SECOND))
+  {
+    return false ;
+  }
+  return true ;
 }
 
 
@@ -358,32 +353,32 @@ Sch_Error_t Scheduler_Process()
   SCH_LOG("PROCESS : Number of event to exec : %d\n\n" , QueueSize) ;
   for(int i = 0 ;i <QueueSize ;i++)
   {
-	  uint8_t event_id = MAX_EVENT_NUMBER ;
-	  Queue_Pop(&EventQueue , &event_id) ;
-	  /**IsEventTimeNow Will assure the execution of event at the right time and date */
-	  if(IsEventTimeNow(event_id))
-	  {
-	    Scheduler_Execute_Event(event_id) ;
-	    Scheduler_Update_Event(event_id) ;
-	  }
+    uint8_t event_id = MAX_EVENT_NUMBER ;
+    Queue_Pop(&EventQueue , &event_id) ;
+    /**IsEventTimeNow Will assure the execution of event at the right time and date */
+    if(IsEventTimeNow(event_id))
+    {
+      Scheduler_Execute_Event(event_id) ;
+      Scheduler_Update_Event(event_id) ;
+    }
   }
 #else
   if(IsEventTimeNow(NextEventId))
-   {
- 	  Scheduler_Execute_Event(NextEventId) ;
- 	  Scheduler_Update_Event(NextEventId) ;
- 	  //SCH_LOG("Event Executed\n\n") ;
-   }
-   else{
-	   SCH_LOG("Missed Event Time\n") ;
-   }
+  {
+    Scheduler_Execute_Event(NextEventId) ;
+    Scheduler_Update_Event(NextEventId) ;
+    //SCH_LOG("Event Executed\n\n") ;
+  }
+  else{
+    SCH_LOG("Missed Event Time\n") ;
+  }
 #endif
 
   Time_t NextEventTime =  { 0} ;
   int selected_event = Scheduler_Get_Next_Event_Time(&NextEventTime) ;
   if(selected_event == MAX_EVENT_NUMBER)
   {
-	  SCH_LOG("No next event is selected \n\n") ;
+    SCH_LOG("No next event is selected \n\n") ;
   }
   SetAlarm(&NextEventTime) ;
   return Sch_Error_Ok ;
@@ -391,27 +386,27 @@ Sch_Error_t Scheduler_Process()
 
 Sch_Error_t Scheduler_Delete_Event_API(uint8_t id)
 {
-	SCH_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id) ;
-	Events[id].State   = State_Deleted ;
-	return Sch_Error_Ok ;
+  SCH_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id) ;
+  Events[id].State   = State_Deleted ;
+  return Sch_Error_Ok ;
 }
 
 Sch_Error_t Scheduler_Suspend_Event_API(uint8_t id)
 {
-	SCH_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id) ;
-	Events[id].State = State_Suspended ;
-	return Sch_Error_Ok ;
+  SCH_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id) ;
+  Events[id].State = State_Suspended ;
+  return Sch_Error_Ok ;
 }
 
 Sch_Error_t Scheduler_Resume_Event_API(uint8_t id)
 {
-	SCH_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id) ;
-	Events[id].State    = State_Ready ;
-	return Sch_Error_Ok ;
+  SCH_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id) ;
+  Events[id].State    = State_Ready ;
+  return Sch_Error_Ok ;
 }
 
 __attribute__((weak)) int Scheduler_Idle(void * args)
 {
-	SCH_LOG("Scheduler idle task\n\n");
-	return 0 ;
+  SCH_LOG("Scheduler idle task\n\n");
+  return 0 ;
 }
