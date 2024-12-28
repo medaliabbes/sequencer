@@ -365,6 +365,15 @@ Sch_Error_t Scheduler_Process()
   {
     SCH_LOG("No next event is selected \n\n") ;
   }
+  Time_t CurrentTime = {0} ;
+  GetTime(&CurrentTime) ;
+  uint32_t current_time_s = TimeToUint32(&CurrentTime) ;
+  uint32_t next_time_s    = TimeToUint32(&NextEventTime) ;
+  if(current_time_s > next_time_s)
+  { /**Should add idle task here**/
+    SCH_LOG("Scheduler will Fail\n");
+    return Sch_Error_Core_Failed ;
+  }
   SetAlarm(&NextEventTime) ;
   return Sch_Error_Ok ;
 }
