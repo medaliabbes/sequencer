@@ -28,6 +28,9 @@
 #ifndef SCHEDULER_INC_PLATFORM_H_
 #define SCHEDULER_INC_PLATFORM_H_
 
+/**
+ * @Note  All platform dependent code should be put here
+ */
 
 #include "stm32f7xx_hal.h"
 
