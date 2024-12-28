@@ -144,8 +144,8 @@ Sch_Error_t    Scheduler_Init(SchedulerInitConfig_t * Config) ;
  * return event ID
  */
 uint8_t Scheduler_Add_Event_API(EventCallback_t EventHandler , Time_t * StartTime ,
-		                     uint32_t Repetetion , uint32_t Periode , Priority_t Priority ,
-							 void * args);
+                                uint32_t Repetetion , uint32_t Periode , Priority_t Priority ,
+                                void * args);
 
 Sch_Error_t    Scheduler_Delete_Event_API(uint8_t id) ;
 
