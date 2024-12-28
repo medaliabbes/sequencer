@@ -73,35 +73,35 @@ uint8_t Scheduler_Add_Event_API(EventCallback_t EventHandler , Time_t * StartTim
 		                     uint32_t Repetetion , uint32_t Periode , Priority_t Priority ,
 							 void * args)
 {
-	SCH_ASSERT( EventHandler != NULL , Sch_Error_Null_Pointer );
-    SCH_ASSERT( StartTime != NULL    , Sch_Error_Null_Pointer );
-    SCH_ASSERT( Repetetion != 0      , Sch_Error_Null_Repetition);
-    SCH_ASSERT( EventCounter < MAX_EVENT_NUMBER , Sch_Error_Excided_Max_Events) ;
+  SCH_ASSERT( EventHandler != NULL , Sch_Error_Null_Pointer );
+  SCH_ASSERT( StartTime != NULL    , Sch_Error_Null_Pointer );
+  SCH_ASSERT( Repetetion != 0      , Sch_Error_Null_Repetition);
+  SCH_ASSERT( EventCounter < MAX_EVENT_NUMBER , Sch_Error_Excided_Max_Events) ;
 
-    SCH_LOG("Scheduler_Add_Event_API\n");
-    Event_t my_event = { 0} ;
+  SCH_LOG("Scheduler_Add_Event_API\n");
+  Event_t my_event = { 0} ;
 
-    my_event.id = EventCounter++ ;
-    my_event.Priority = Priority ;
-    my_event.Callback = EventHandler ;
+  my_event.id = EventCounter++ ;
+  my_event.Priority = Priority ;
+  my_event.Callback = EventHandler ;
 
-    my_event.NumRepetetion = Repetetion ;
-    my_event.args = args ;
-    my_event.Period = Periode ;
-    my_event.State     = State_Ready ;
-    memcpy( (void*)&my_event.StartTime , (void *)StartTime , sizeof( Time_t));
-    /***NextExcTime should be calculated here**/
-    calculate_appropriete_next_time(&my_event.StartTime , &my_event.NextExcTime , Periode) ;
-    my_event.MagicNumber = MAGIC_NUMBER ;
-    Scheduler_Add_Event(&my_event) ;
-    Time_t NextEventTime = { 0 };
-    Scheduler_Get_Next_Event_Time(&NextEventTime) ;
-    SCH_LOG("API start time %02d:%02d:%02d\n" , NextEventTime.hour ,
-    		NextEventTime.minute ,
-			NextEventTime.second) ;
-    /**set alarm to next event time*/
-    SetAlarm(&NextEventTime) ;
-    return  my_event.id ;
+  my_event.NumRepetetion = Repetetion ;
+  my_event.args = args ;
+  my_event.Period = Periode ;
+  my_event.State     = State_Ready ;
+  memcpy( (void*)&my_event.StartTime , (void *)StartTime , sizeof( Time_t));
+  /***NextExcTime should be calculated here**/
+  calculate_appropriete_next_time(&my_event.StartTime , &my_event.NextExcTime , Periode) ;
+  my_event.MagicNumber = MAGIC_NUMBER ;
+  Scheduler_Add_Event(&my_event) ;
+  Time_t NextEventTime = { 0 };
+  Scheduler_Get_Next_Event_Time(&NextEventTime) ;
+  SCH_LOG("API start time %02d:%02d:%02d\n" , NextEventTime.hour ,
+    NextEventTime.minute ,
+    NextEventTime.second) ;
+  /**set alarm to next event time*/
+  SetAlarm(&NextEventTime) ;
+  return  my_event.id ;
 }
 
 /**
@@ -110,125 +110,120 @@ uint8_t Scheduler_Add_Event_API(EventCallback_t EventHandler , Time_t * StartTim
  */
 static void calculate_appropriete_next_time(Time_t * start_time , Time_t * next_time , uint32_t event_period)
 {
-	Time_t CurrentTime = {0} ;
-	GetTime(&CurrentTime) ;
+  Time_t CurrentTime = {0} ;
+  GetTime(&CurrentTime) ;
 
-
-	if( TimeToUint32(&CurrentTime) > TimeToUint32(start_time))
-	{   /**Start time in the paste */
-		/**Did the easiest thing , set next exc time to current time + period
-		 * No alignment is done , */
-		uint32_t event_next_exc_time = TimeToUint32(&CurrentTime) + event_period ;
-		Uint32ToTime(next_time, event_next_exc_time);
-		next_time->day   = start_time->day ;
-		next_time->month = start_time->month ;
-		next_time->year  = start_time->year ;
-	}
-	else
-	{	/**start time in the feature*/
-		memcpy(next_time , start_time , sizeof(Time_t));
-	}
+  if( TimeToUint32(&CurrentTime) > TimeToUint32(start_time))
+  {  /**Start time in the paste */
+    /**Did the easiest thing , set next exc time to current time + period
+    * No alignment is done , */
+    uint32_t event_next_exc_time = TimeToUint32(&CurrentTime) + event_period ;
+    Uint32ToTime(next_time, event_next_exc_time);
+    next_time->day   = start_time->day ;
+    next_time->month = start_time->month ;
+    next_time->year  = start_time->year ;
+  }
+  else
+  {  /**start time in the feature*/
+    memcpy(next_time , start_time , sizeof(Time_t));
+  }
 }
 
 static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime)
 {
-	Time_t now ;
+  Time_t now ;
+  GetTime(&now) ;
 
-	GetTime(&now) ;
+  uint32_t t_now = TimeToUint32(&now);
+  uint8_t selected_event = MAX_EVENT_NUMBER ;
+  uint32_t ptime = 0xffffffff ;
+  //NextEventId = MAX_EVENT_NUMBER ;
+  Queue_Dump(&EventQueue) ;
+  for(int i = 0 ; i< EventCounter ; i++ )
+  {
+    /**When an event is deleted or suspended , it's not considered to
+     * to execute
+     */
+    if( (Events[i].MagicNumber != MAGIC_NUMBER) ||
+        Events[i].State != State_Ready )
+    {
+      continue ;
+    }
+    uint32_t ev_time = TimeToUint32(&Events[i].NextExcTime) ;
 
-	uint32_t t_now = TimeToUint32(&now);
-    uint8_t selected_event = MAX_EVENT_NUMBER ;
-	uint32_t ptime = 0xffffffff ;
-	//NextEventId = MAX_EVENT_NUMBER ;
-	Queue_Dump(&EventQueue) ;
-	for(int i = 0 ; i< EventCounter ; i++ )
-	{
-		/**When an event is deleted or suspended , it's not considered to
-		 * to execute
-		 * */
-		if( (Events[i].MagicNumber != MAGIC_NUMBER) ||
-		     Events[i].State != State_Ready )
-		{
-			continue ;
-		}
+   /**inside the if should be replaced or removed **/
+    if(ev_time < t_now )
+    {
+      ev_time += Events[i].Period ;
+    }
 
-		uint32_t ev_time = TimeToUint32(&Events[i].NextExcTime) ;
+    if(ev_time < ptime)
+    {
+      ptime = ev_time ;
+      //NextEventId = i ;
+      Queue_Dump(&EventQueue) ;
+      Queue_Push(&EventQueue , i) ;
+      selected_event = i ;
+    }
+    else if(ev_time == ptime)
+    {
+      ptime = ev_time ;
+      Queue_Push(&EventQueue , i) ;
+    }
+  }
 
-		/**inside the if should be replaced or removed **/
-		if(ev_time < t_now )
-		{
-			ev_time += Events[i].Period ;
-		}
-
-		if(ev_time < ptime)
-		{
-			ptime = ev_time ;
-			//NextEventId = i ;
-			Queue_Dump(&EventQueue) ;
-			Queue_Push(&EventQueue , i) ;
-			selected_event = i ;
-		}
-		else if(ev_time == ptime)
-		{
-			ptime = ev_time ;
-			Queue_Push(&EventQueue , i) ;
-		}
-	}
-
-	/**this can be removed **/
-	if(selected_event != MAX_EVENT_NUMBER )
-	{
-		memcpy(NextEventTime , &Events[selected_event].NextExcTime , sizeof(Time_t)) ;
-	}
-
-	return selected_event ;
+  /**this can be removed **/
+  if(selected_event != MAX_EVENT_NUMBER )
+  {
+    memcpy(NextEventTime , &Events[selected_event].NextExcTime , sizeof(Time_t)) ;
+  }
+  return selected_event ;
 }
 
 static Sch_Error_t Scheduler_Add_Event(Event_t * Event)
 {
-	SCH_ASSERT( Event != NULL  , Sch_Error_Null_Pointer ) ;
-	SCH_ASSERT(Event->id < MAX_EVENT_NUMBER , Sch_Error_Excided_Max_Events) ;
+  SCH_ASSERT( Event != NULL  , Sch_Error_Null_Pointer ) ;
+  SCH_ASSERT(Event->id < MAX_EVENT_NUMBER , Sch_Error_Excided_Max_Events) ;
 
-	memcpy(&Events[Event->id] , Event , sizeof(Event_t)) ;
-
-	return Sch_Error_Ok ;
+  memcpy(&Events[Event->id] , Event , sizeof(Event_t)) ;
+  return Sch_Error_Ok ;
 }
 
 
 Sch_Error_t Scheduler_Execute_Event(uint8_t id)
 {
-	SCH_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id);
+  SCH_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id);
 
-	/**SCH_ASSERT the event is not suspended before execution*/
-	if(Events[id].State == State_Suspended )
-	{
-		SCH_LOG("Event Suspended\n\n") ;
-		return Sch_Error_Exc_Event_Suspended ;
-	}
-	/**SCH_ASSERT the event is not disabled before execution*/
-	if(Events[id].State   == State_Deleted )
-	{
-		SCH_LOG("Event Deleted\n\n") ;
-	  return Sch_Error_Exc_Event_Deleted ;
-	}
+  /**SCH_ASSERT the event is not suspended before execution*/
+  if(Events[id].State == State_Suspended )
+  {
+    SCH_LOG("Event Suspended\n\n") ;
+    return Sch_Error_Exc_Event_Suspended ;
+  }
+  /**SCH_ASSERT the event is not disabled before execution*/
+  if(Events[id].State   == State_Deleted )
+  {
+    SCH_LOG("Event Deleted\n\n") ;
+    return Sch_Error_Exc_Event_Deleted ;
+  }
 
-	/**Check event still has num rep to execute */
-	if(Events[id].NumRepetetion == 0)
-	{
-		SCH_LOG("Event End Rep\n\n") ;
-		return Sch_Error_Exc_Event_Null_Rep ;
-	}
-	/**SCH_ASSERT Event CallBack is not NULL*/
-	if( Events[id].Callback == NULL)
-	{
-		SCH_LOG("Event Null Callback\n\n") ;
-		return Sch_Error_Exc_Event_Null_cbk ;
-	}
-	else{
-		Events[id].Callback( Events[id].args ) ;
-	}
+  /**Check event still has num rep to execute */
+  if(Events[id].NumRepetetion == 0)
+  {
+    SCH_LOG("Event End Rep\n\n") ;
+    return Sch_Error_Exc_Event_Null_Rep ;
+  }
+  /**SCH_ASSERT Event CallBack is not NULL*/
+  if( Events[id].Callback == NULL)
+  {
+    SCH_LOG("Event Null Callback\n\n") ;
+    return Sch_Error_Exc_Event_Null_cbk ;
+  }
+  else{
+    Events[id].Callback( Events[id].args ) ;
+  }
 
-	return Sch_Error_Ok ;
+  return Sch_Error_Ok ;
 }
 
 void Scheduler_Event_Set_Args(uint8_t id , void * arg1, void * arg2)
