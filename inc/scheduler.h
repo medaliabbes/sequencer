@@ -54,9 +54,6 @@ typedef enum {
   Sch_Error_Exc_Event_Null_cbk   , /**<Null Callback>*/
 }Sch_Error_t;
 
-/**<SUPPORT EXECUTING MULTIPLE EVENTS AT THE SAME TIME>*/
-#define  MULTIPLE_EVENTS_SUPPORT
-
 #define  MAX_EVENT_NUMBER  100
 
 #define  MAGIC_NUMBER      0xf0175896

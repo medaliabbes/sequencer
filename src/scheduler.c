@@ -341,8 +341,6 @@ static bool IsEventTimeNow(uint8_t event_id)
 
 Sch_Error_t Scheduler_Process()
 {
-
-#ifdef MULTIPLE_EVENTS_SUPPORT
   int QueueSize = Queue_Get_Size(&EventQueue) ;
 
   /**
@@ -360,17 +358,6 @@ Sch_Error_t Scheduler_Process()
       Scheduler_Update_Event(event_id) ;
     }
   }
-#else
-  if(IsEventTimeNow(NextEventId))
-  {
-    Scheduler_Execute_Event(NextEventId) ;
-    Scheduler_Update_Event(NextEventId) ;
-    //SCH_LOG("Event Executed\n\n") ;
-  }
-  else{
-    SCH_LOG("Missed Event Time\n") ;
-  }
-#endif
 
   Time_t NextEventTime =  { 0} ;
   int selected_event = Scheduler_Get_Next_Event_Time(&NextEventTime) ;
