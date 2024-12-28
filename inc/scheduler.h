@@ -37,8 +37,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "platform.h"
 #include "date_time.h"
-#include "stm32f7xx_hal.h"
 #include "scheduler_queue.h"
 
 typedef enum {
