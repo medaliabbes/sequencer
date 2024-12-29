@@ -34,7 +34,7 @@ static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime) ;
 static Sch_Error_t Scheduler_Add_Event(Event_t * Event) ;
 static bool IsEventTimeNow(uint8_t event_id);
 static void calculate_appropriete_next_time(Time_t * start_time , Time_t * next_time , uint32_t event_period) ;
-
+static void calculate_event_resume_time(Time_t * resume_time ,Time_t * current_time, uint32_t event_period)   ;
 /**This function convert only time to uint32_t not the date*/
 static uint32_t TimeToUint32(Time_t * sTime);
 static void     Uint32ToTime(Time_t * sTime , uint32_t time_in_s);
@@ -115,11 +115,15 @@ static void calculate_appropriete_next_time(Time_t * start_time , Time_t * next_
   {  /**Start time in the paste */
     /**Did the easiest thing , set next exc time to current time + period
     * No alignment is done , */
-    uint32_t event_next_exc_time = TimeToUint32(&CurrentTime) + event_period ;
-    Uint32ToTime(next_time, event_next_exc_time);
-    next_time->day   = start_time->day ;
-    next_time->month = start_time->month ;
-    next_time->year  = start_time->year ;
+//    uint32_t event_next_exc_time = TimeToUint32(&CurrentTime) + event_period ;
+//    Uint32ToTime(next_time, event_next_exc_time);
+//    next_time->day   = start_time->day ;
+//    next_time->month = start_time->month ;
+//    next_time->year  = start_time->year ;
+
+    /**this will align the event time*/
+    memcpy(next_time ,start_time , sizeof(Time_t) );
+    calculate_event_resume_time(next_time , &CurrentTime , event_period );
   }
   else
   {  /**start time in the feature*/
@@ -140,7 +144,7 @@ static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime)
   for(int i = 0 ; i< EventCounter ; i++ )
   {
     /**When an event is deleted or suspended , it's not considered to
-     * to execute
+     * be execute
      */
     if( (Events[i].MagicNumber != MAGIC_NUMBER) ||
         Events[i].State != State_Ready )
@@ -187,6 +191,18 @@ static Sch_Error_t Scheduler_Add_Event(Event_t * Event)
   return Sch_Error_Ok ;
 }
 
+static void calculate_event_resume_time(Time_t * resume_time ,Time_t * current_time, uint32_t event_period)
+{
+  uint32_t current_time_sec = TimeToUint32(current_time) ;
+  uint32_t resume_time_sec  = TimeToUint32(resume_time)  ;
+  /**resume time should be < current time*/
+  uint32_t delta_time = current_time_sec - resume_time_sec ;
+
+  uint32_t remaining_to_next_period = event_period - (delta_time % event_period) ;
+  resume_time_sec = remaining_to_next_period + current_time_sec ;
+
+  Uint32ToTime(resume_time, resume_time_sec) ;
+}
 
 Sch_Error_t Scheduler_Execute_Event(uint8_t id)
 {
@@ -395,7 +411,15 @@ Sch_Error_t Scheduler_Suspend_Event_API(uint8_t id)
 Sch_Error_t Scheduler_Resume_Event_API(uint8_t id)
 {
   SCH_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id) ;
+  if(Events[id].State == State_Suspended)
+  {
+    /**Should calculate the next execution time after suspension*/
+    Time_t CurrentTime = { 0} ;
+    GetTime(&CurrentTime) ;
+    calculate_event_resume_time(&Events[id].NextExcTime ,&CurrentTime ,Events[id].Period ) ;
+  }
   Events[id].State    = State_Ready ;
+
   return Sch_Error_Ok ;
 }
 
