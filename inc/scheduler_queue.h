@@ -36,6 +36,11 @@
 #include <stdint.h>
 
 typedef struct{
+  uint8_t id       ;
+  uint8_t priority ;
+}Q_Event_t ;
+
+typedef struct{
 	uint8_t * buffer     ;
 	uint8_t   size       ;
 	uint8_t * WritePtr   ;
@@ -52,6 +57,8 @@ bool Queue_Dump(queue_t * Queue ) ;
 bool Queue_Is_Epmty(queue_t * Queue) ;
 
 int  Queue_Get_Size(queue_t * Queue) ;
+
+bool Queue_Sort(queue_t * Queue) ;
 
 bool Queue_Deinit(queue_t * Queue)  ;
 

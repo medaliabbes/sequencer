@@ -104,9 +104,9 @@ typedef enum {
  */
 typedef enum
 {
-	Priority_Low     ,
-	Priority_Medium  ,
-	Priority_High    ,
+	Priority_Low     = 0,
+	Priority_Medium     ,
+	Priority_High       ,
 }Priority_t;
 
 typedef struct
