@@ -28,16 +28,10 @@
 *
 */
 #include "scheduler.h"
-
+#include "scheduler_utils.h"
 
 static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime) ;
 static Sch_Error_t Scheduler_Add_Event(Event_t * Event) ;
-static bool IsEventTimeNow(uint8_t event_id);
-static void calculate_appropriete_next_time(Time_t * start_time , Time_t * next_time , uint32_t event_period) ;
-static void calculate_event_resume_time(Time_t * resume_time ,Time_t * current_time, uint32_t event_period)   ;
-/**This function convert only time to uint32_t not the date*/
-static uint32_t TimeToUint32(Time_t * sTime);
-static void     Uint32ToTime(Time_t * sTime , uint32_t time_in_s);
 
 static Event_t Events[MAX_EVENT_NUMBER] ;
 
@@ -89,7 +83,20 @@ uint8_t Scheduler_Add_Event_API(EventCallback_t EventHandler , Time_t * StartTim
   my_event.State     = State_Ready ;
   memcpy( (void*)&my_event.StartTime , (void *)StartTime , sizeof( Time_t));
   /***NextExcTime should be calculated here**/
-  calculate_appropriete_next_time(&my_event.StartTime , &my_event.NextExcTime , Periode) ;
+  Time_t CurrentTime = {0} ;
+  GetTime(&CurrentTime) ;
+
+  if( UTIL_Time_To_Uint32(&CurrentTime) > UTIL_Time_To_Uint32(&my_event.StartTime ))
+  {  /**Start time in the paste */
+    /**this will align the event time*/
+    memcpy(&my_event.NextExcTime ,&my_event.StartTime  , sizeof(Time_t) );
+    UTIL_Calculate_Next_Resume_Time(&my_event.NextExcTime  , &CurrentTime , Periode );
+  }
+  else
+  {  /**start time in the feature*/
+    memcpy(&my_event.NextExcTime , &my_event.StartTime , sizeof(Time_t));
+  }
+
   my_event.MagicNumber = MAGIC_NUMBER ;
   Scheduler_Add_Event(&my_event) ;
   Time_t NextEventTime = { 0 };
@@ -102,41 +109,13 @@ uint8_t Scheduler_Add_Event_API(EventCallback_t EventHandler , Time_t * StartTim
   return  my_event.id ;
 }
 
-/**
- * get an event next execution time based on it's start time and period
- * this function should only be called when adding an event
- */
-static void calculate_appropriete_next_time(Time_t * start_time , Time_t * next_time , uint32_t event_period)
-{
-  Time_t CurrentTime = {0} ;
-  GetTime(&CurrentTime) ;
-
-  if( TimeToUint32(&CurrentTime) > TimeToUint32(start_time))
-  {  /**Start time in the paste */
-    /**Did the easiest thing , set next exc time to current time + period
-    * No alignment is done , */
-//    uint32_t event_next_exc_time = TimeToUint32(&CurrentTime) + event_period ;
-//    Uint32ToTime(next_time, event_next_exc_time);
-//    next_time->day   = start_time->day ;
-//    next_time->month = start_time->month ;
-//    next_time->year  = start_time->year ;
-
-    /**this will align the event time*/
-    memcpy(next_time ,start_time , sizeof(Time_t) );
-    calculate_event_resume_time(next_time , &CurrentTime , event_period );
-  }
-  else
-  {  /**start time in the feature*/
-    memcpy(next_time , start_time , sizeof(Time_t));
-  }
-}
 
 static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime)
 {
   Time_t now ;
   GetTime(&now) ;
 
-  uint32_t t_now = TimeToUint32(&now);
+  uint32_t t_now = UTIL_Time_To_Uint32(&now);
   uint8_t selected_event = MAX_EVENT_NUMBER ;
   uint32_t ptime = 0xffffffff ;
   //NextEventId = MAX_EVENT_NUMBER ;
@@ -151,7 +130,7 @@ static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime)
     {
       continue ;
     }
-    uint32_t ev_time = TimeToUint32(&Events[i].NextExcTime) ;
+    uint32_t ev_time = UTIL_Time_To_Uint32(&Events[i].NextExcTime) ;
 
    /**inside the if should be replaced or removed **/
     if(ev_time < t_now )
@@ -189,19 +168,6 @@ static Sch_Error_t Scheduler_Add_Event(Event_t * Event)
 
   memcpy(&Events[Event->id] , Event , sizeof(Event_t)) ;
   return Sch_Error_Ok ;
-}
-
-static void calculate_event_resume_time(Time_t * resume_time ,Time_t * current_time, uint32_t event_period)
-{
-  uint32_t current_time_sec = TimeToUint32(current_time) ;
-  uint32_t resume_time_sec  = TimeToUint32(resume_time)  ;
-  /**resume time should be < current time*/
-  uint32_t delta_time = current_time_sec - resume_time_sec ;
-
-  uint32_t remaining_to_next_period = event_period - (delta_time % event_period) ;
-  resume_time_sec = remaining_to_next_period + current_time_sec ;
-
-  Uint32ToTime(resume_time, resume_time_sec) ;
 }
 
 Sch_Error_t Scheduler_Execute_Event(uint8_t id)
@@ -245,12 +211,6 @@ void Scheduler_Event_Set_Args(uint8_t id , void * arg1, void * arg2)
 
 }
 
-Event_t * Scheduler_Get_Event_By_Id(uint8_t id)
-{
-  return NULL ;
-}
-
-
 /**
  * Brief  This Function calculate and set an event
  *        next execution time
@@ -276,19 +236,10 @@ Sch_Error_t Scheduler_Update_Event(uint8_t id )
     Events[id].State = State_Deleted ;
   }
   else{
-    uint32_t NextTime_s = TimeToUint32(&Events[id].NextExcTime) + Events[id].Period ;
-    Uint32ToTime(&Events[id].NextExcTime , NextTime_s) ;
+    uint32_t NextTime_s = UTIL_Time_To_Uint32(&Events[id].NextExcTime) + Events[id].Period ;
+    UTIL_Uint32_To_Time(&Events[id].NextExcTime , NextTime_s) ;
   }
   return Sch_Error_Ok ;
-}
-
-/**
- * Convert Time to seconds
- */
-static uint32_t TimeToUint32(Time_t * sTime)
-{
-  uint32_t ret = sTime->second + (sTime->minute * 60) + (sTime->hour * 60 * 60);
-  return ret ;
 }
 
 /**
@@ -305,60 +256,11 @@ void RTC_INTERRUPT_ROUTINE(void)
   /* USER CODE END RTC_Alarm_IRQn 1 */
 }
 
-static void     Uint32ToTime(Time_t * sTime , uint32_t time_in_s)
-{
-  sTime->hour   = time_in_s / 3600 ;
-  sTime->minute = (time_in_s - (sTime->hour  * 3600)) / 60 ;
-  sTime->second = time_in_s % 60 ;
-}
-
-static bool IsEventTimeNow(uint8_t event_id)
-{
-  Time_t t_Now = { 0 } ;
-  Event_t * ev = &Events[event_id] ;
-
-  GetTime(&t_Now) ;
-  Time_t * t = &t_Now ;
-  SCH_LOG_TIME(t) ;
-
-  if(!(ev->NextExcTime.year == t_Now.year )&& !(ev->NextExcTime.year == SCH_EVERY_YEAR))
-  {
-    return false ;
-  }
-
-  if(!(ev->NextExcTime.month == t_Now.month )&& !(ev->NextExcTime.month == SCH_EVERY_MONTH))
-  {
-    return false ;
-  }
-
-  if(!(ev->NextExcTime.day == t_Now.day )&& !(ev->NextExcTime.day == SCH_EVERY_DAY))
-  {
-    return false ;
-  }
-
-  if(!(ev->NextExcTime.hour == t_Now.hour )&& !(ev->NextExcTime.hour == SCH_EVERY_HOUR))
-  {
-    return false ;
-  }
-
-  if(!(ev->NextExcTime.minute == t_Now.minute )&& !(ev->NextExcTime.minute == SCH_EVERY_MINUTE))
-  {
-    return false ;
-  }
-
-  /**CAN TOLERATE 1 OR 2 SECONDS*/
-  if(!(ev->NextExcTime.second == t_Now.second )&& !(ev->NextExcTime.second == SCH_EVERY_SECOND))
-  {
-    return false ;
-  }
-  return true ;
-}
-
-
 Sch_Error_t Scheduler_Process()
 {
   int QueueSize = Queue_Get_Size(&EventQueue) ;
-
+  Time_t CurrentTime = {0} ;
+  GetTime(&CurrentTime) ;
   /**
    * @Note  : Events can be sorted based on they priority before execution
    */
@@ -367,8 +269,8 @@ Sch_Error_t Scheduler_Process()
   {
     uint8_t event_id = MAX_EVENT_NUMBER ;
     Queue_Pop(&EventQueue , &event_id) ;
-    /**IsEventTimeNow Will assure the execution of event at the right time and date */
-    if(IsEventTimeNow(event_id))
+    /**UTIL_IS_Time_Now Will assure the execution of event at the right time and date */
+    if(UTIL_IS_Time_Now(&CurrentTime , &Events[event_id].NextExcTime))
     {
       Scheduler_Execute_Event(event_id) ;
       Scheduler_Update_Event(event_id) ;
@@ -381,11 +283,11 @@ Sch_Error_t Scheduler_Process()
   {
     SCH_LOG("No next event is selected \n\n") ;
   }
-  Time_t CurrentTime = {0} ;
-  GetTime(&CurrentTime) ;
-  uint32_t current_time_s = TimeToUint32(&CurrentTime) ;
-  uint32_t next_time_s    = TimeToUint32(&NextEventTime) ;
-  if(current_time_s > next_time_s)
+  
+  uint32_t current_time_s = UTIL_Time_To_Uint32(&CurrentTime) ;
+  uint32_t next_time_s    = UTIL_Time_To_Uint32(&NextEventTime) ;
+  /**if alarm time (NextEventTime) == current time no interrupt will be triggered */
+  if(current_time_s >= next_time_s)
   { /**Should add idle task here**/
     SCH_LOG("Scheduler will Fail\n");
     return Sch_Error_Core_Failed ;
@@ -416,7 +318,7 @@ Sch_Error_t Scheduler_Resume_Event_API(uint8_t id)
     /**Should calculate the next execution time after suspension*/
     Time_t CurrentTime = { 0} ;
     GetTime(&CurrentTime) ;
-    calculate_event_resume_time(&Events[id].NextExcTime ,&CurrentTime ,Events[id].Period ) ;
+    UTIL_Calculate_Next_Resume_Time(&Events[id].NextExcTime ,&CurrentTime ,Events[id].Period ) ;
     /**Event state should be set to ready before process ,so it's be consider for scheduling */
     Events[id].State    = State_Ready ;
     Scheduler_Process();
