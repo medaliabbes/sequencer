@@ -417,8 +417,10 @@ Sch_Error_t Scheduler_Resume_Event_API(uint8_t id)
     Time_t CurrentTime = { 0} ;
     GetTime(&CurrentTime) ;
     calculate_event_resume_time(&Events[id].NextExcTime ,&CurrentTime ,Events[id].Period ) ;
+    /**Event state should be set to ready before process ,so it's be consider for scheduling */
+    Events[id].State    = State_Ready ;
+    Scheduler_Process();
   }
-  Events[id].State    = State_Ready ;
 
   return Sch_Error_Ok ;
 }
