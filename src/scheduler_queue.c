@@ -116,7 +116,7 @@ int  Queue_Get_Size(queue_t * Queue)
   {
     return false ;
   }
-  int size = Queue->WritePtr - Queue->buffer ;
+  int size = (Queue->WritePtr - Queue->buffer) / sizeof(Q_Event_t);
   return size ;
 }
 
@@ -133,9 +133,9 @@ bool Queue_Sort(queue_t * Queue)
   
   Q_Event_t * event_array = (Q_Event_t *) Queue->buffer ;
   Q_Event_t aux ;
-  for(int i = 0 ; i <(queue_size /2) - 1 ; i++)
+  for(int i = 0 ; i < queue_size - 1  ; i++)
   {
-    for(int j = i+1 ; j < queue_size / 2 ; j++)
+    for(int j = i+1 ; j < queue_size  ; j++)
     {
       if(event_array[j].priority > event_array[i].priority)
       {
