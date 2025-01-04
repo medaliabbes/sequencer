@@ -118,7 +118,7 @@ static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime)
   uint32_t t_now = UTIL_Time_To_Uint32(&now);
   uint8_t selected_event = MAX_EVENT_NUMBER ;
   uint32_t ptime = 0xffffffff ;
-  //NextEventId = MAX_EVENT_NUMBER ;
+  Q_Event_t QEvent = {0} ;
   Queue_Dump(&EventQueue) ;
   for(int i = 0 ; i< EventCounter ; i++ )
   {
@@ -141,15 +141,18 @@ static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime)
     if(ev_time < ptime)
     {
       ptime = ev_time ;
-      //NextEventId = i ;
       Queue_Dump(&EventQueue) ;
-      Queue_Push(&EventQueue , i) ;
+      QEvent.id = i ;
+      QEvent.priority = Events[i].Period ;
+      Queue_Push(&EventQueue , QEvent) ;
       selected_event = i ;
     }
     else if(ev_time == ptime)
     {
       ptime = ev_time ;
-      Queue_Push(&EventQueue , i) ;
+      QEvent.id = i ;
+      QEvent.priority = Events[i].Period ;
+      Queue_Push(&EventQueue , QEvent) ;
     }
   }
 
@@ -265,15 +268,15 @@ Sch_Error_t Scheduler_Process()
    * @Note  : Events can be sorted based on they priority before execution
    */
   SCH_LOG("PROCESS : Number of event to exec : %d\n\n" , QueueSize) ;
+  Q_Event_t QEvent = {0} ;
   for(int i = 0 ;i <QueueSize ;i++)
   {
-    uint8_t event_id = MAX_EVENT_NUMBER ;
-    Queue_Pop(&EventQueue , &event_id) ;
+    Queue_Pop(&EventQueue , &QEvent) ;
     /**UTIL_IS_Time_Now Will assure the execution of event at the right time and date */
-    if(UTIL_IS_Time_Now(&CurrentTime , &Events[event_id].NextExcTime))
+    if(UTIL_IS_Time_Now(&CurrentTime , &Events[QEvent.id].NextExcTime))
     {
-      Scheduler_Execute_Event(event_id) ;
-      Scheduler_Update_Event(event_id) ;
+      Scheduler_Execute_Event(QEvent.id) ;
+      Scheduler_Update_Event(QEvent.id) ;
     }
   }
 
