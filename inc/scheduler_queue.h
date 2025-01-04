@@ -48,9 +48,9 @@ typedef struct{
 
 bool Queue_Init(queue_t * Queue , uint8_t * buffer , uint8_t size) ;
 
-bool Queue_Push(queue_t * Queue , uint8_t element) ;
+bool Queue_Push(queue_t * Queue , Q_Event_t  element) ;
 
-bool Queue_Pop(queue_t * Queue , uint8_t * element)  ;
+bool Queue_Pop(queue_t * Queue , Q_Event_t * element)  ;
 
 bool Queue_Dump(queue_t * Queue ) ;
 

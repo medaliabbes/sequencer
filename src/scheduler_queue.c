@@ -43,7 +43,7 @@ bool Queue_Init(queue_t * Queue , uint8_t * buffer , uint8_t size)
   return true ;
 }
 
-bool Queue_Push(queue_t * Queue , uint8_t element)
+bool Queue_Push(queue_t * Queue , Q_Event_t  element)
 {
 	/** This condition to prevent crashes*/
   if(Queue == NULL)
@@ -55,12 +55,15 @@ bool Queue_Push(queue_t * Queue , uint8_t element)
   {
     return false ;
   }
-  *(uint8_t*)(Queue->WritePtr) = element ;
+  *(uint8_t*)(Queue->WritePtr) = element.id ;
   Queue->WritePtr++ ;
+  *(uint8_t*)(Queue->WritePtr) = element.priority ;
+  Queue->WritePtr++ ;
+
   return true ;
 }
 
-bool Queue_Pop(queue_t * Queue , uint8_t * element)
+bool Queue_Pop(queue_t * Queue , Q_Event_t * element)
 {
   /** This condition to prevent crashes*/
   if(Queue == NULL)
@@ -68,11 +71,13 @@ bool Queue_Pop(queue_t * Queue , uint8_t * element)
     return false ;
   }
 
-  if(Queue->WritePtr + 1 <= Queue->buffer )
+  if(Queue->WritePtr <= Queue->buffer )
   {
     return false ;
   }
-  *element = *(uint8_t*)(Queue->WritePtr - 1) ;
+  element->priority = *(uint8_t*)(Queue->WritePtr - 1) ;
+  Queue->WritePtr-- ;
+  element->id = *(uint8_t*)(Queue->WritePtr - 1) ;
   Queue->WritePtr-- ;
   return true ;
 }
@@ -113,6 +118,35 @@ int  Queue_Get_Size(queue_t * Queue)
   }
   int size = Queue->WritePtr - Queue->buffer ;
   return size ;
+}
+
+bool Queue_Sort(queue_t * Queue) 
+{
+  if(Queue == NULL)
+  {
+    return false ;
+  }
+
+  int queue_size = Queue_Get_Size(Queue) ;
+  if((queue_size % 2 != 0) || (queue_size == 0))
+    return false ;
+  
+  Q_Event_t * event_array = (Q_Event_t *) Queue->buffer ;
+  Q_Event_t aux ;
+  for(int i = 0 ; i <(queue_size /2) - 1 ; i++)
+  {
+    for(int j = i+1 ; j < queue_size / 2 ; j++)
+    {
+      if(event_array[j].priority > event_array[i].priority)
+      {
+        /**swap */
+        aux            = event_array[j] ;
+        event_array[j] = event_array[i] ;
+        event_array[i] = aux ;
+      }
+    }
+  }
+  return true ;
 }
 
 bool Queue_Deinit(queue_t * Queue)
