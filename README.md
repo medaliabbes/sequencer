@@ -21,18 +21,23 @@ The Scheduler is a lightweight and efficient library designed to provide an easy
 ## How to use 
 scheduler configuration
 ```C:examples/main.c [13-15]
+
 ```
 adding event 
 ```C:examples/main.c [23-25]
+
 ```
 suspending event
 ```C:examples/main.c [36-36]
+
 ```
 resuming event
 ```C:examples/main.c [40-40]
+
 ```
 deleting event
 ```C:examples/main.c [44-44]
+
 ```
 ## License
 This project is licensed under the MIT License. See the **LICENSE** file for details
