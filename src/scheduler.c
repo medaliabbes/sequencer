@@ -39,9 +39,9 @@ static GetTime_t  GetTime  = NULL ;
 static SetAlarm_t SetAlarm = NULL ;
 static uint8_t EventCounter = 0 ;
 
-/**NextEventId this should be replaced by a queue ,so when more than
- * one event occurs at the same time they can be executed*/
-//static uint8_t NextEventId  = MAX_EVENT_NUMBER ;
+volatile uint8_t notification = 0 ;
+
+/**Event Queue hold events that will be executed at the next alarm */
 static queue_t EventQueue  = {0};
 
 static uint8_t EventQueueBuffer[10] = {0} ;
@@ -143,7 +143,7 @@ static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime)
       ptime = ev_time ;
       Queue_Dump(&EventQueue) ;
       QEvent.id = i ;
-      QEvent.priority = Events[i].Period ;
+      QEvent.priority = Events[i].Priority ;
       Queue_Push(&EventQueue , QEvent) ;
       selected_event = i ;
     }
@@ -151,7 +151,7 @@ static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime)
     {
       ptime = ev_time ;
       QEvent.id = i ;
-      QEvent.priority = Events[i].Period ;
+      QEvent.priority = Events[i].Priority ;
       Queue_Push(&EventQueue , QEvent) ;
     }
   }
@@ -255,13 +255,17 @@ void RTC_INTERRUPT_ROUTINE(void)
   /* USER CODE END RTC_Alarm_IRQn 0 */
   RTC_INTERRUPT_HANDLER() ;
   /* USER CODE BEGIN RTC_Alarm_IRQn 1 */
-  Scheduler_Process() ;
+  notification =  RTC_INTERRUPT_NOTIF ;
   /* USER CODE END RTC_Alarm_IRQn 1 */
 }
 
 Sch_Error_t Scheduler_Process()
 {
+  if(notification != RTC_INTERRUPT_NOTIF)
+	  return Sch_Error_Ok ;
+  notification = 0 ;
   int QueueSize = Queue_Get_Size(&EventQueue) ;
+  Queue_Sort(&EventQueue) ;
   Time_t CurrentTime = {0} ;
   GetTime(&CurrentTime) ;
   /**

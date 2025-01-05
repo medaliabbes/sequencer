@@ -137,7 +137,7 @@ bool Queue_Sort(queue_t * Queue)
   {
     for(int j = i+1 ; j < queue_size  ; j++)
     {
-      if(event_array[j].priority > event_array[i].priority)
+      if(event_array[j].priority < event_array[i].priority)
       {
         /**swap */
         aux            = event_array[j] ;
