@@ -59,6 +59,8 @@ typedef enum {
 
 #define  MAGIC_NUMBER      0xf0175896
 
+#define  RTC_INTERRUPT_NOTIF       0x61
+
 #define  DEV
 
 
@@ -105,8 +107,8 @@ typedef enum {
 typedef enum
 {
 	Priority_Low     = 0,
-	Priority_Medium     ,
-	Priority_High       ,
+	Priority_Medium  = 3,
+	Priority_High    = 2,
 }Priority_t;
 
 typedef struct
