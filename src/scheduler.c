@@ -324,7 +324,7 @@ Sch_Error_t Scheduler_Resume_Event_API(uint8_t id)
     UTIL_Calculate_Next_Resume_Time(&Events[id].NextExcTime ,&CurrentTime ,Events[id].Period ) ;
     /**Event state should be set to ready before process ,so it's be consider for scheduling */
     Events[id].State    = State_Ready ;
-    Scheduler_Process();
+    Scheduler_Get_Next_Event_Time(&CurrentTime) ;
   }
 
   return Sch_Error_Ok ;
