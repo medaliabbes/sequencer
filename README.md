@@ -19,13 +19,19 @@ The Scheduler is a lightweight and efficient library designed to provide an easy
 - IoT devices.
 - Low power applications 
 ## How to use 
-scheduler configuration
-```C:examples/main.c [13-15]
-
+scheduler initialisation
+``` c
+SchedulerInitConfig_t  SchedulerConfig
+SchedulerConfig.GetTime = get_time ;
+SchedulerConfig.SetAlarm = set_alarm ;
+Scheduler_Init(&SchedulerConfig) ;
 ```
 adding event 
-``` c:examples/main.c [23-25]
-
+``` c
+Time_t s_time = { .hour = 0 , .minute = 0 , .second = 10 ,.day = SCH_EVERY_DAY ,
+  	  	  	  	  	  	  	  	  	  	  	  	  	  	      .month = SCH_EVERY_MONTH ,
+  	  	  	  	  	  	  	  	  	  	  	  	  	  	      .year = SCH_EVERY_YEAR } ;
+uint8_t log_handler_id = Scheduler_Add_Event_API(log_handler , &s_time , SCH_REPETITION_INF , 6 , Priority_Low, NULL);
 ```
 suspending event
 ``` c:examples/main.c [36-36]
