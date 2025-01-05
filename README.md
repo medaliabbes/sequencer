@@ -24,19 +24,19 @@ scheduler configuration
 
 ```
 adding event 
-```C:examples/main.c [23-25]
+``` c:examples/main.c [23-25]
 
 ```
 suspending event
-```C:examples/main.c [36-36]
+``` c:examples/main.c [36-36]
 
 ```
 resuming event
-```C:examples/main.c [40-40]
+``` c:examples/main.c [40-40]
 
 ```
 deleting event
-```C:examples/main.c [44-44]
+``` c:examples/main.c [44-44]
 
 ```
 ## License
