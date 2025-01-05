@@ -19,31 +19,89 @@ The Scheduler is a lightweight and efficient library designed to provide an easy
 - IoT devices.
 - Low power applications 
 ## How to use 
-scheduler initialisation
+#### Implement set_alarm and get_time functions 
+``` c
+/**Example STM32 HAL implementation */
+static void get_time(Time_t * TimeStruct)
+{
+#if  defined(USE_HAL_DRIVER) && defined(HAL_RTC_MODULE_ENABLED)
+  RTC_DateTypeDef sDate ;
+  RTC_TimeTypeDef sTime ;
+  HAL_RTC_GetTime(&hrtc, &sTime,RTC_FORMAT_BIN ) ;
+  HAL_RTC_GetDate(&hrtc, &sDate,RTC_FORMAT_BIN ) ;
+
+  TimeStruct->year   = sDate.Year ;
+  TimeStruct->month  = sDate.Month ;
+  TimeStruct->day    = sDate.Date ;
+  TimeStruct->hour   = sTime.Hours ;
+  TimeStruct->minute = sTime.Minutes ;
+  TimeStruct->second = sTime.Seconds ;
+#endif
+}
+
+static void set_alarm(Time_t * TimeStruct)
+{
+#if  defined(USE_HAL_DRIVER) && defined(HAL_RTC_MODULE_ENABLED)
+  RTC_AlarmTypeDef sAlarm = {0};
+  sAlarm.AlarmTime.Hours = TimeStruct->hour;
+  sAlarm.AlarmTime.Minutes = TimeStruct->minute;
+  sAlarm.AlarmTime.Seconds = TimeStruct->second;
+  sAlarm.AlarmTime.SubSeconds = 0x0;
+  sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY ;
+  sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
+  sAlarm.Alarm = RTC_ALARM_A;
+  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
+  {
+	Error_Handler();
+  }
+#endif
+}
+
+```
+#### Initialization
 ``` c
 SchedulerInitConfig_t  SchedulerConfig
 SchedulerConfig.GetTime = get_time ;
 SchedulerConfig.SetAlarm = set_alarm ;
 Scheduler_Init(&SchedulerConfig) ;
 ```
-adding event 
+#### Adding event 
 ``` c
-Time_t s_time = { .hour = 0 , .minute = 0 , .second = 10 ,.day = SCH_EVERY_DAY ,
-  	  	  	  	  	  	  	  	  	  	  	  	  	  	      .month = SCH_EVERY_MONTH ,
-  	  	  	  	  	  	  	  	  	  	  	  	  	  	      .year = SCH_EVERY_YEAR } ;
-uint8_t log_handler_id = Scheduler_Add_Event_API(log_handler , &s_time , SCH_REPETITION_INF , 6 , Priority_Low, NULL);
+Time_t start_time = { .hour = 0 , .minute = 0 , .second = 10 ,
+                      .day = SCH_EVERY_DAY ,
+                      .month = SCH_EVERY_MONTH ,
+                      .year = SCH_EVERY_YEAR } ;
+uint8_t log_handler_id = Scheduler_Add_Event_API(log_handler , &start_time , 
+                                                 SCH_REPETITION_INF,
+                                                 6 ,
+                                                 Priority_Low, 
+                                                 NULL);
 ```
-suspending event
-``` c:examples/main.c [36-36]
-
+#### Suspending event
+``` c
+Scheduler_Suspend_Event_API(log_handler_id) ;
 ```
-resuming event
-``` c:examples/main.c [40-40]
 
+#### Resuming event
+``` c
+Scheduler_Resume_Event_API(log_handler_id) ;
 ```
-deleting event
-``` c:examples/main.c [44-44]
 
+#### Deleting event
+``` c
+Scheduler_Delete_Event_API(stack_handler_id) ;
+```
+
+#### Call scheduler process in the main loop
+
+``` c
+while(1)
+  {
+    Scheduler_Process() ;
+  }
 ```
 ## License
 This project is licensed under the MIT License. See the **LICENSE** file for details
