@@ -33,6 +33,13 @@ void     UTIL_Uint32_To_Time(Time_t * sTime , uint32_t time_in_s)
   sTime->hour   = time_in_s / 3600 ;
   sTime->minute = (time_in_s - (sTime->hour  * 3600)) / 60 ;
   sTime->second = time_in_s % 60 ;
+  if( time_in_s / 3600 >= 24)
+  {
+    sTime->hour   = (time_in_s / 3600) % 24 ;
+  }
+  else{
+    
+  }
 }
 
 uint32_t UTIL_Time_To_Uint32(Time_t * sTime) 
@@ -81,11 +88,18 @@ void     UTIL_Calculate_Next_Resume_Time(Time_t * resume_time ,Time_t * current_
 {
   uint32_t current_time_sec = UTIL_Time_To_Uint32(current_time) ;
   uint32_t resume_time_sec  = UTIL_Time_To_Uint32(resume_time)  ;
-  /**resume time should be < current time*/
-  uint32_t delta_time = current_time_sec - resume_time_sec ;
 
+  uint32_t delta_time = 0 ;
+  if(current_time_sec < resume_time_sec)
+  { /**This mean that the next resume time will be in the next day */
+    delta_time = (24*60*60) - resume_time_sec + current_time_sec ;//(resume_time_sec - current_time_sec ) ;
+  }
+  else{
+    delta_time = current_time_sec - resume_time_sec ;
+  }
   uint32_t remaining_to_next_period = event_period - (delta_time % event_period) ;
   resume_time_sec = remaining_to_next_period + current_time_sec ;
 
   UTIL_Uint32_To_Time(resume_time, resume_time_sec) ;
+  //printf("Resume time %d:%d:%d\n\n", resume_time->hour , resume_time->minute , resume_time->second) ;
 }
