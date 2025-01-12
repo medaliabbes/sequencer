@@ -1,4 +1,4 @@
-# Scheduler 
+# Sequencer 
 
 ## Overview
 The Sequencer is a lightweight and efficient library designed to provide an easy-to-use API for priority-based execution of events. It is optimized for use on low-power devices, ensuring minimal resource usage while maintaining reliability and flexibility.
@@ -14,7 +14,7 @@ The Sequencer is a lightweight and efficient library designed to provide an easy
 - **Flexible Event Handling**: Support for various event types and scheduling requirements.
 
 ## Use Cases
-#### The Scheduler is suitable for :
+#### The Sequencer is suitable for :
 - Embedded systems.
 - IoT devices.
 - Low power applications 
