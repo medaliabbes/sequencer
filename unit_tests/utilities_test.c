@@ -34,8 +34,55 @@ void utilities_uint32_to_time_test()
 
 }
 
+void utilities_calculate_next_resume_time_test()
+{
+    Time_t current_time  = { .hour = 12 , .minute = 10 , .second = 0 } ;
+    Time_t resume_time   = { .hour = 11 , .minute = 30 , .second = 10} ; //last resume time
+    uint32_t period = 10 ;//in second
+    UTIL_Calculate_Next_Resume_Time(&resume_time , &current_time , period) ;
+    TEST_CHECK_( (resume_time.hour == 12 ) && (resume_time.minute == 10) && (resume_time.second == 10), "hour== %d , minute == %d , sec == %d" , 12,10,10 );
+
+    Time_t current_time1  = { .hour = 12 , .minute = 11 , .second = 0 } ;
+    Time_t resume_time1   = { .hour = 12 , .minute = 10 , .second = 17} ; //last resume time
+    period = 3 ;
+    UTIL_Calculate_Next_Resume_Time(&resume_time1 , &current_time1 , period) ;
+    TEST_CHECK_( (resume_time1.hour == 12 ) && (resume_time1.minute == 11) && (resume_time1.second == 2), "hour== %d , minute == %d , sec == %d" , 12,11,2 );
+    
+    Time_t current_time2  = { .hour = 0 , .minute = 0 , .second = 0 } ;
+    Time_t resume_time2   = { .hour = 23 , .minute = 10 , .second = 17} ; //last resume time
+    period = 3600 ;
+    UTIL_Calculate_Next_Resume_Time(&resume_time2 , &current_time2 , period) ;
+    TEST_CHECK_( (resume_time2.hour == 0 ) && (resume_time2.minute == 10) && (resume_time2.second == 17), "hour== %d , minute == %d , sec == %d" , 3,10,17 );
+    
+    Time_t current_time3  = { .hour = 12 , .minute = 0 , .second = 0 } ;
+    Time_t resume_time3   = { .hour = 11 , .minute = 50 , .second = 0} ; //last resume time
+    period = 30*60 ;
+    UTIL_Calculate_Next_Resume_Time(&resume_time3 , &current_time3 , period) ;
+    TEST_CHECK_( (resume_time3.hour == 12 ) && (resume_time3.minute == 20) && (resume_time3.second == 0), "hour== %d , minute == %d , sec == %d" , 12,20,0 );
+    
+    Time_t current_time4  = { .hour = 17 , .minute = 0 , .second = 0 } ;
+    Time_t resume_time4   = { .hour = 14 , .minute = 45 , .second = 32} ; //last resume time
+    period = 20*60 ;
+    UTIL_Calculate_Next_Resume_Time(&resume_time4 , &current_time4 , period) ;
+    TEST_CHECK_( (resume_time4.hour == 17 ) && (resume_time4.minute == 05) && (resume_time4.second == 32), "hour== %d , minute == %d , sec == %d" , 17,5,32 );
+    
+    Time_t current_time5  = { .hour = 8 , .minute = 30 , .second = 0 } ;
+    Time_t resume_time5   = { .hour = 8 , .minute = 0 , .second = 0} ; //last resume time
+    period = 60*60 ;
+    UTIL_Calculate_Next_Resume_Time(&resume_time5 , &current_time5 , period) ;
+    TEST_CHECK_( (resume_time5.hour == 9 ) && (resume_time5.minute == 0) && (resume_time5.second == 0), "hour== %d , minute == %d , sec == %d" , 17,5,32 );
+    
+    Time_t current_time6  = { .hour = 0 , .minute = 3 , .second = 0 } ;
+    Time_t resume_time6   = { .hour = 23 , .minute = 55 , .second = 0} ; //last resume time
+    period = 10*60 ;
+    UTIL_Calculate_Next_Resume_Time(&resume_time6 , &current_time6 , period) ;
+    TEST_CHECK_( (resume_time6.hour == 0 ) && (resume_time6.minute == 5) && (resume_time6.second == 0), "hour== %d , minute == %d , sec == %d" , 0,5,0 );
+   
+}
+
 TEST_LIST = {
 	{"uint32_t UTIL_Time_To_Uint32(Time_t * time_struct);" , utilities_time_to_uint32_tunit_test},
     {"uint32_t UTIL_Uint32_To_Time(Time_t * sTime , uint32_t time_in_s)" ,utilities_uint32_to_time_test },
+    {"void UTIL_Calculate_Next_Resume_Time(Time_t * resume_time ,Time_t * current_time, uint32_t event_period)" ,utilities_calculate_next_resume_time_test} ,
 	{0}/*   */
 };
