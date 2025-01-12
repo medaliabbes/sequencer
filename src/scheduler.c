@@ -261,8 +261,6 @@ void RTC_INTERRUPT_ROUTINE(void)
 
 Sch_Error_t Scheduler_Process()
 {
-  if(notification != RTC_INTERRUPT_NOTIF)
-	  return Sch_Error_Ok ;
   notification = 0 ;
   int QueueSize = Queue_Get_Size(&EventQueue) ;
   Queue_Sort(&EventQueue) ;
@@ -301,6 +299,13 @@ Sch_Error_t Scheduler_Process()
   }
   SetAlarm(&NextEventTime) ;
   return Sch_Error_Ok ;
+}
+
+bool Is_Sch_notification() 
+{
+  if(notification == RTC_INTERRUPT_NOTIF)
+	  return true ;
+  return false ;
 }
 
 Sch_Error_t Scheduler_Delete_Event_API(uint8_t id)

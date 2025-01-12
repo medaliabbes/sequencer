@@ -155,6 +155,8 @@ Sch_Error_t    Scheduler_Resume_Event_API(uint8_t id)  ;
 
 Sch_Error_t    Scheduler_Process(void) ;
 
+bool          Is_Sch_notification() ;
+
 int     Scheduler_Idle(void * args) __attribute__((weak)) ;
 
 #endif /* INC_SCHEDULER_H_ */
