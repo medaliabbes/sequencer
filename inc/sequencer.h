@@ -101,7 +101,7 @@ typedef enum {
 typedef enum
 {
 	Priority_Low     = 0,
-	Priority_Medium  = 3,
+	Priority_Medium  = 1,
 	Priority_High    = 2,
 }Priority_t;
 
@@ -152,5 +152,10 @@ Seq_Error_t    Sequencer_Process(void) ;
 bool          Is_Seq_notification() ;
 
 int     Sequencer_Idle(void * args) __attribute__((weak)) ;
+
+#ifdef ENABLE_UNIT_TEST
+int      Sequencer_Get_Next_Event_Time(Time_t * NextEventTime) ;
+int      Get_Number_Events_To_Execute() ;
+#endif /*ENABLE_UNIT_TEST*/
 
 #endif /* INC_SEQUENCER_H_ */

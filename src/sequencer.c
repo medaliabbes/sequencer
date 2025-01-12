@@ -24,7 +24,9 @@
 #include "sequencer.h"
 #include "sequencer_utils.h"
 
+#ifndef ENABLE_UNIT_TEST
 static int  Sequencer_Get_Next_Event_Time(Time_t * NextEventTime) ;
+#endif 
 static Seq_Error_t Sequencer_Add_Event(Event_t * Event) ;
 
 static Event_t Events[MAX_EVENT_NUMBER] ;
@@ -103,12 +105,17 @@ uint8_t Sequencer_Add_Event_API(EventCallback_t EventHandler , Time_t * StartTim
   return  my_event.id ;
 }
 
-
+#ifndef ENABLE_UNIT_TEST 
 static int  Sequencer_Get_Next_Event_Time(Time_t * NextEventTime)
+#else
+int  Sequencer_Get_Next_Event_Time(Time_t * NextEventTime)
+#endif
 {
   Time_t now ;
   GetTime(&now) ;
-
+  Time_t * ptrNow = &now ;
+  
+  SEQ_LOG_TIME(ptrNow) ;
   uint32_t t_now = UTIL_Time_To_Uint32(&now);
   uint8_t selected_event = MAX_EVENT_NUMBER ;
   uint32_t ptime = 0xffffffff ;
@@ -149,6 +156,8 @@ static int  Sequencer_Get_Next_Event_Time(Time_t * NextEventTime)
       Queue_Push(&EventQueue , QEvent) ;
     }
   }
+
+  Time_t * event_time  = &Events[selected_event].NextExcTime ; 
 
   /**this can be removed **/
   if(selected_event != MAX_EVENT_NUMBER )
@@ -332,6 +341,13 @@ Seq_Error_t Scheduler_Resume_Event_API(uint8_t id)
 
   return Seq_Error_Ok ;
 }
+
+#ifdef ENABLE_UNIT_TEST
+int Get_Number_Events_To_Execute()
+{
+  return  Queue_Get_Size(&EventQueue) ;
+}
+#endif /*ENABLE_UNIT_TEST*/
 
 __attribute__((weak)) int Sequencer_Idle(void * args)
 {
