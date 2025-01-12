@@ -20,15 +20,9 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
-*
-* file  : scheduler.c
-*
-*  Created on: Nov 17, 2024
-*      Author: M.BEN ABBES
-*
 */
 #include "sequencer.h"
-#include "scheduler_utils.h"
+#include "sequencer_utils.h"
 
 static int  Sequencer_Get_Next_Event_Time(Time_t * NextEventTime) ;
 static Seq_Error_t Sequencer_Add_Event(Event_t * Event) ;

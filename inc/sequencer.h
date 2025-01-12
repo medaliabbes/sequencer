@@ -33,7 +33,7 @@
 
 #include "platform.h"
 #include "date_time.h"
-#include "scheduler_queue.h"
+#include "sequencer_queue.h"
 
 typedef enum {
   Seq_Error_Ok               = 0 , /**<No Error>*/
