@@ -1,7 +1,7 @@
 # Scheduler 
 
 ## Overview
-The Scheduler is a lightweight and efficient library designed to provide an easy-to-use API for priority-based execution of events. It is optimized for use on low-power devices, ensuring minimal resource usage while maintaining reliability and flexibility.
+The Sequencer is a lightweight and efficient library designed to provide an easy-to-use API for priority-based execution of events. It is optimized for use on low-power devices, ensuring minimal resource usage while maintaining reliability and flexibility.
 
 ## Features 
 
@@ -63,36 +63,36 @@ static void set_alarm(Time_t * TimeStruct)
 ```
 #### Initialization
 ``` c
-SchedulerInitConfig_t  SchedulerConfig
-SchedulerConfig.GetTime = get_time ;
-SchedulerConfig.SetAlarm = set_alarm ;
-Scheduler_Init(&SchedulerConfig) ;
+SequencerInitConfig_t  SequencerConfig
+SequencerConfig.GetTime = get_time ;
+SequencerConfig.SetAlarm = set_alarm ;
+Sequencer_Init(&SequencerConfig) ;
 ```
 #### Adding event 
 ``` c
 Time_t start_time = { .hour = 0 , .minute = 0 , .second = 10 ,
-                      .day = SCH_EVERY_DAY ,
-                      .month = SCH_EVERY_MONTH ,
-                      .year = SCH_EVERY_YEAR } ;
-uint8_t log_handler_id = Scheduler_Add_Event_API(log_handler , &start_time , 
-                                                 SCH_REPETITION_INF,
+                      .day = SEQ_EVERY_DAY ,
+                      .month = SEQ_EVERY_MONTH ,
+                      .year = SEQ_EVERY_YEAR } ;
+uint8_t log_handler_id = Sequencer_Add_Event_API(log_handler , &start_time , 
+                                                 SEQ_REPETITION_INF,
                                                  6 ,
                                                  Priority_Low, 
                                                  NULL);
 ```
 #### Suspending event
 ``` c
-Scheduler_Suspend_Event_API(log_handler_id) ;
+Sequencer_Suspend_Event_API(log_handler_id) ;
 ```
 
 #### Resuming event
 ``` c
-Scheduler_Resume_Event_API(log_handler_id) ;
+Sequencer_Resume_Event_API(log_handler_id) ;
 ```
 
 #### Deleting event
 ``` c
-Scheduler_Delete_Event_API(stack_handler_id) ;
+Sequencer_Delete_Event_API(stack_handler_id) ;
 ```
 
 #### Call scheduler process in the main loop
@@ -100,7 +100,7 @@ Scheduler_Delete_Event_API(stack_handler_id) ;
 ``` c
 while(1)
   {
-    Scheduler_Process() ;
+    Sequencer_Process() ;
   }
 ```
 ## License
