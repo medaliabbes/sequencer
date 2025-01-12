@@ -1,7 +1,39 @@
 #include "acutest.h"
 #include "date_time.h"
+#include "sequencer.h"
 #include "sequencer_utils.h"
 
+#include <stdio.h>
+
+Time_t GTime = { .hour = 10 , .minute = 12 , .second = 5 }; //global time 
+void setAlarm(Time_t * TimeStuct)
+{
+
+}
+
+void getTime(Time_t * TimeStuct)
+{
+    memcpy(TimeStuct , &GTime , sizeof(Time_t));
+}
+
+int callback(void * args)
+{
+    printf("Event trigred\n") ;
+    return 0 ;
+}
+
+void sequencer_unit_test(void)
+{
+    SequencerInitConfig_t SequencerInit = { .GetTime = getTime , .SetAlarm = setAlarm } ;
+    Sequencer_Init(&SequencerInit) ;
+
+    Time_t StartTime = { .hour = 10 , .minute = 12 , .second = 0 } ;
+    Time_t NextTime = { 0} ; 
+    uint8_t id = Sequencer_Add_Event_API(callback , &StartTime , 10 , 60 , Priority_High , NULL) ;
+    GTime.hour = 10 ; GTime.minute = 12 ; GTime.second = 20 ;
+    Sequencer_Get_Next_Event_Time(&NextTime);
+    TEST_CHECK_( NextTime.hour == 10 && NextTime.minute == 13 && NextTime.second == 0 ,"nextTime %2d:%2d:%2d" , 10,13,0 ) ;
+}
 
 void utilities_time_to_uint32_tunit_test()
 {
@@ -84,5 +116,6 @@ TEST_LIST = {
 	{"uint32_t UTIL_Time_To_Uint32(Time_t * time_struct);" , utilities_time_to_uint32_tunit_test},
     {"uint32_t UTIL_Uint32_To_Time(Time_t * sTime , uint32_t time_in_s)" ,utilities_uint32_to_time_test },
     {"void UTIL_Calculate_Next_Resume_Time(Time_t * resume_time ,Time_t * current_time, uint32_t event_period)" ,utilities_calculate_next_resume_time_test} ,
-	{0}/*   */
+	{"void sequencer_unit_test(void)" , sequencer_unit_test} ,
+    {0},/*   */
 };

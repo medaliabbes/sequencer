@@ -31,6 +31,7 @@
 /**
  * @Note  All platform dependent code should be put here
  */
+#if defined(USE_HAL_DRIVER)
 
 #include "stm32f7xx_hal.h"
 
@@ -39,5 +40,11 @@
 #define  RTC_INTERRUPT_HANDLER()       HAL_RTC_AlarmIRQHandler(&hrtc)
 
 extern   RTC_HandleTypeDef hrtc;
+#endif 
+
+
+#define  RTC_INTERRUPT_ROUTINE        interrupt
+
+#define  RTC_INTERRUPT_HANDLER()       
 
 #endif /* SCHEDULER_INC_PLATFORM_H_ */
