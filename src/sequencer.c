@@ -20,18 +20,12 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
-*
-* file  : scheduler.c
-*
-*  Created on: Nov 17, 2024
-*      Author: M.BEN ABBES
-*
 */
-#include "scheduler.h"
-#include "scheduler_utils.h"
+#include "sequencer.h"
+#include "sequencer_utils.h"
 
-static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime) ;
-static Sch_Error_t Scheduler_Add_Event(Event_t * Event) ;
+static int  Sequencer_Get_Next_Event_Time(Time_t * NextEventTime) ;
+static Seq_Error_t Sequencer_Add_Event(Event_t * Event) ;
 
 static Event_t Events[MAX_EVENT_NUMBER] ;
 
@@ -46,31 +40,31 @@ static queue_t EventQueue  = {0};
 
 static uint8_t EventQueueBuffer[10] = {0} ;
 
-Sch_Error_t Scheduler_Init(SchedulerInitConfig_t * Config)
+Seq_Error_t Sequencer_Init(SequencerInitConfig_t * Config)
 {
-  SCH_ASSERT(Config != NULL , Sch_Error_Null_Pointer) ;
+  SEQ_ASSERT(Config != NULL , Sch_Error_Null_Pointer) ;
 
-  SCH_ASSERT(Config->SetAlarm != NULL , Sch_Error_Null_Pointer) ;
-  SCH_ASSERT(Config->GetTime  != NULL , Sch_Error_Null_Pointer) ;
+  SEQ_ASSERT(Config->SetAlarm != NULL , Sch_Error_Null_Pointer) ;
+  SEQ_ASSERT(Config->GetTime  != NULL , Sch_Error_Null_Pointer) ;
 
   GetTime  = Config->GetTime  ;
   SetAlarm = Config->SetAlarm ;
 
   Queue_Init(&EventQueue , EventQueueBuffer , 10) ;
 
-  return Sch_Error_Ok ;
+  return Seq_Error_Ok ;
 }
 
-uint8_t Scheduler_Add_Event_API(EventCallback_t EventHandler , Time_t * StartTime ,
+uint8_t Sequencer_Add_Event_API(EventCallback_t EventHandler , Time_t * StartTime ,
 		                     uint32_t Repetetion , uint32_t Periode , Priority_t Priority ,
 							 void * args)
 {
-  SCH_ASSERT( EventHandler != NULL , Sch_Error_Null_Pointer );
-  SCH_ASSERT( StartTime != NULL    , Sch_Error_Null_Pointer );
-  SCH_ASSERT( Repetetion != 0      , Sch_Error_Null_Repetition);
-  SCH_ASSERT( EventCounter < MAX_EVENT_NUMBER , Sch_Error_Excided_Max_Events) ;
+  SEQ_ASSERT( EventHandler != NULL , Seq_Error_Null_Pointer );
+  SEQ_ASSERT( StartTime != NULL    , Seq_Error_Null_Pointer );
+  SEQ_ASSERT( Repetetion != 0      , Seq_Error_Null_Repetition);
+  SEQ_ASSERT( EventCounter < MAX_EVENT_NUMBER , Seq_Error_Excided_Max_Events) ;
 
-  SCH_LOG("Scheduler_Add_Event_API\n");
+  SEQ_LOG("Sequencer_Add_Event_API\n");
   Event_t my_event = { 0} ;
 
   my_event.id = EventCounter++ ;
@@ -98,10 +92,10 @@ uint8_t Scheduler_Add_Event_API(EventCallback_t EventHandler , Time_t * StartTim
   }
 
   my_event.MagicNumber = MAGIC_NUMBER ;
-  Scheduler_Add_Event(&my_event) ;
+  Sequencer_Add_Event(&my_event) ;
   Time_t NextEventTime = { 0 };
-  Scheduler_Get_Next_Event_Time(&NextEventTime) ;
-  SCH_LOG("API start time %02d:%02d:%02d\n" , NextEventTime.hour ,
+  Sequencer_Get_Next_Event_Time(&NextEventTime) ;
+  SEQ_LOG("API start time %02d:%02d:%02d\n" , NextEventTime.hour ,
     NextEventTime.minute ,
     NextEventTime.second) ;
   /**set alarm to next event time*/
@@ -110,7 +104,7 @@ uint8_t Scheduler_Add_Event_API(EventCallback_t EventHandler , Time_t * StartTim
 }
 
 
-static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime)
+static int  Sequencer_Get_Next_Event_Time(Time_t * NextEventTime)
 {
   Time_t now ;
   GetTime(&now) ;
@@ -164,52 +158,52 @@ static int  Scheduler_Get_Next_Event_Time(Time_t * NextEventTime)
   return selected_event ;
 }
 
-static Sch_Error_t Scheduler_Add_Event(Event_t * Event)
+static Seq_Error_t Sequencer_Add_Event(Event_t * Event)
 {
-  SCH_ASSERT( Event != NULL  , Sch_Error_Null_Pointer ) ;
-  SCH_ASSERT(Event->id < MAX_EVENT_NUMBER , Sch_Error_Excided_Max_Events) ;
+  SEQ_ASSERT( Event != NULL  , Seq_Error_Null_Pointer ) ;
+  SEQ_ASSERT(Event->id < MAX_EVENT_NUMBER , Seq_Error_Excided_Max_Events) ;
 
   memcpy(&Events[Event->id] , Event , sizeof(Event_t)) ;
-  return Sch_Error_Ok ;
+  return Seq_Error_Ok ;
 }
 
-Sch_Error_t Scheduler_Execute_Event(uint8_t id)
+Seq_Error_t Sequencer_Execute_Event(uint8_t id)
 {
-  SCH_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id);
+  SEQ_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id);
 
   /**SCH_ASSERT the event is not suspended before execution*/
   if(Events[id].State == State_Suspended )
   {
-    SCH_LOG("Event Suspended\n\n") ;
-    return Sch_Error_Exc_Event_Suspended ;
+    SEQ_LOG("Event Suspended\n\n") ;
+    return Seq_Error_Exc_Event_Suspended ;
   }
   /**SCH_ASSERT the event is not disabled before execution*/
   if(Events[id].State   == State_Deleted )
   {
-    SCH_LOG("Event Deleted\n\n") ;
-    return Sch_Error_Exc_Event_Deleted ;
+    SEQ_LOG("Event Deleted\n\n") ;
+    return Seq_Error_Exc_Event_Deleted ;
   }
 
   /**Check event still has num rep to execute */
   if(Events[id].NumRepetetion == 0)
   {
-    SCH_LOG("Event End Rep\n\n") ;
-    return Sch_Error_Exc_Event_Null_Rep ;
+    SEQ_LOG("Event End Rep\n\n") ;
+    return Seq_Error_Exc_Event_Null_Rep ;
   }
   /**SCH_ASSERT Event CallBack is not NULL*/
   if( Events[id].Callback == NULL)
   {
-    SCH_LOG("Event Null Callback\n\n") ;
-    return Sch_Error_Exc_Event_Null_cbk ;
+    SEQ_LOG("Event Null Callback\n\n") ;
+    return Seq_Error_Exc_Event_Null_cbk ;
   }
   else{
     Events[id].Callback( Events[id].args ) ;
   }
 
-  return Sch_Error_Ok ;
+  return Seq_Error_Ok ;
 }
 
-void Scheduler_Event_Set_Args(uint8_t id , void * arg1, void * arg2)
+void Sequencer_Event_Set_Args(uint8_t id , void * arg1, void * arg2)
 {
 
 }
@@ -219,16 +213,16 @@ void Scheduler_Event_Set_Args(uint8_t id , void * arg1, void * arg2)
  *        next execution time
  * param  id of the event
  */
-Sch_Error_t Scheduler_Update_Event(uint8_t id )
+Seq_Error_t Sequencer_Update_Event(uint8_t id )
 {
-  SCH_ASSERT(id < MAX_EVENT_NUMBER  , Sch_Error_Invalid_Id) ;
+  SEQ_ASSERT(id < MAX_EVENT_NUMBER  , Sch_Error_Invalid_Id) ;
 
   if(Events[id].NumRepetetion == 0)
   {
-    return Sch_Error_Null_Repetition ;
+    return Seq_Error_Null_Repetition ;
   }
 
-  if(Events[id].NumRepetetion != SCH_REPETITION_INF){
+  if(Events[id].NumRepetetion != SEQ_REPETITION_INF){
      Events[id].NumRepetetion-- ;
   }
   /**When an event reaches it number of repetition
@@ -242,7 +236,7 @@ Sch_Error_t Scheduler_Update_Event(uint8_t id )
     uint32_t NextTime_s = UTIL_Time_To_Uint32(&Events[id].NextExcTime) + Events[id].Period ;
     UTIL_Uint32_To_Time(&Events[id].NextExcTime , NextTime_s) ;
   }
-  return Sch_Error_Ok ;
+  return Seq_Error_Ok ;
 }
 
 /**
@@ -259,7 +253,7 @@ void RTC_INTERRUPT_ROUTINE(void)
   /* USER CODE END RTC_Alarm_IRQn 1 */
 }
 
-Sch_Error_t Scheduler_Process()
+Seq_Error_t Sequencer_Process()
 {
   notification = 0 ;
   int QueueSize = Queue_Get_Size(&EventQueue) ;
@@ -269,7 +263,7 @@ Sch_Error_t Scheduler_Process()
   /**
    * @Note  : Events can be sorted based on they priority before execution
    */
-  SCH_LOG("PROCESS : Number of event to exec : %d\n\n" , QueueSize) ;
+  SEQ_LOG("PROCESS : Number of event to exec : %d\n\n" , QueueSize) ;
   Q_Event_t QEvent = {0} ;
   for(int i = 0 ;i <QueueSize ;i++)
   {
@@ -277,16 +271,16 @@ Sch_Error_t Scheduler_Process()
     /**UTIL_IS_Time_Now Will assure the execution of event at the right time and date */
     if(UTIL_IS_Time_Now(&CurrentTime , &Events[QEvent.id].NextExcTime))
     {
-      Scheduler_Execute_Event(QEvent.id) ;
-      Scheduler_Update_Event(QEvent.id) ;
+      Sequencer_Execute_Event(QEvent.id) ;
+      Sequencer_Update_Event(QEvent.id) ;
     }
   }
 
   Time_t NextEventTime =  { 0} ;
-  int selected_event = Scheduler_Get_Next_Event_Time(&NextEventTime) ;
+  int selected_event = Sequencer_Get_Next_Event_Time(&NextEventTime) ;
   if(selected_event == MAX_EVENT_NUMBER)
   {
-    SCH_LOG("No next event is selected \n\n") ;
+    SEQ_LOG("No next event is selected \n\n") ;
   }
   
   uint32_t current_time_s = UTIL_Time_To_Uint32(&CurrentTime) ;
@@ -294,37 +288,37 @@ Sch_Error_t Scheduler_Process()
   /**if alarm time (NextEventTime) == current time no interrupt will be triggered */
   if(current_time_s >= next_time_s)
   { /**Should add idle task here**/
-    SCH_LOG("Scheduler will Fail\n");
-    return Sch_Error_Core_Failed ;
+    SEQ_LOG("Scheduler will Fail\n");
+    return Seq_Error_Core_Failed ;
   }
   SetAlarm(&NextEventTime) ;
-  return Sch_Error_Ok ;
+  return Seq_Error_Ok ;
 }
 
-bool Is_Sch_notification() 
+bool Is_Seq_notification() 
 {
   if(notification == RTC_INTERRUPT_NOTIF)
 	  return true ;
   return false ;
 }
 
-Sch_Error_t Scheduler_Delete_Event_API(uint8_t id)
+Seq_Error_t Sequencer_Delete_Event_API(uint8_t id)
 {
-  SCH_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id) ;
+  SEQ_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id) ;
   Events[id].State   = State_Deleted ;
-  return Sch_Error_Ok ;
+  return Seq_Error_Ok ;
 }
 
-Sch_Error_t Scheduler_Suspend_Event_API(uint8_t id)
+Seq_Error_t Sequencer_Suspend_Event_API(uint8_t id)
 {
-  SCH_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id) ;
+  SEQ_ASSERT(id < MAX_EVENT_NUMBER , Seq_Error_Invalid_Id) ;
   Events[id].State = State_Suspended ;
-  return Sch_Error_Ok ;
+  return Seq_Error_Ok ;
 }
 
-Sch_Error_t Scheduler_Resume_Event_API(uint8_t id)
+Seq_Error_t Scheduler_Resume_Event_API(uint8_t id)
 {
-  SCH_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id) ;
+  SEQ_ASSERT(id < MAX_EVENT_NUMBER , Seq_Error_Invalid_Id) ;
   if(Events[id].State == State_Suspended)
   {
     /**Should calculate the next execution time after suspension*/
@@ -333,14 +327,14 @@ Sch_Error_t Scheduler_Resume_Event_API(uint8_t id)
     UTIL_Calculate_Next_Resume_Time(&Events[id].NextExcTime ,&CurrentTime ,Events[id].Period ) ;
     /**Event state should be set to ready before process ,so it's be consider for scheduling */
     Events[id].State    = State_Ready ;
-    Scheduler_Get_Next_Event_Time(&CurrentTime) ;
+    Sequencer_Get_Next_Event_Time(&CurrentTime) ;
   }
 
-  return Sch_Error_Ok ;
+  return Seq_Error_Ok ;
 }
 
-__attribute__((weak)) int Scheduler_Idle(void * args)
+__attribute__((weak)) int Sequencer_Idle(void * args)
 {
-  SCH_LOG("Scheduler idle task\n\n");
+  SEQ_LOG("Sequencer idle task\n\n");
   return 0 ;
 }

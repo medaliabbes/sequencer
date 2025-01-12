@@ -20,15 +20,9 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
-*
-* file  : scheduler_queue.h
-*
-*  Created on: Nov 17, 2024
-*      Author: M.BEN ABBES
-*
 */
-#ifndef INC_SCHEDULER_QUEUE_H_
-#define INC_SCHEDULER_QUEUE_H_
+#ifndef INC_SEQUENCER_QUEUE_H_
+#define INC_SEQUENCER_QUEUE_H_
 
 
 #include <stdbool.h>
@@ -62,4 +56,4 @@ bool Queue_Sort(queue_t * Queue) ;
 
 bool Queue_Deinit(queue_t * Queue)  ;
 
-#endif /* INC_SCHEDULER_QUEUE_H_ */
+#endif /* INC_SEQUENCER_QUEUE_H_ */

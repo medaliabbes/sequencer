@@ -20,15 +20,10 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
-*
- * scheduler_utils.h
- *
- *  Created on: Jan 1, 2025
- *      Author: moham
- */
+*/
 
-#ifndef SCHEDULER_INC_SCHEDULER_UTILS_H_
-#define SCHEDULER_INC_SCHEDULER_UTILS_H_
+#ifndef INC_SEQUENCER_UTILS_H_
+#define INC_SEQUENCER_UTILS_H_
 
 #include "date_time.h"
 
@@ -74,4 +69,4 @@ bool     UTIL_IS_Time_Now(Time_t * CurrentTime , Time_t * EventTime) ;
  */
 void     UTIL_Calculate_Next_Resume_Time(Time_t * resume_time ,Time_t * current_time, uint32_t event_period) ;
 
-#endif /* SCHEDULER_INC_SCHEDULER_UTILS_H_ */
+#endif /* INC_SEQUENCER_UTILS_H_ */
