@@ -33,6 +33,13 @@ void     UTIL_Uint32_To_Time(Time_t * sTime , uint32_t time_in_s)
   sTime->hour   = time_in_s / 3600 ;
   sTime->minute = (time_in_s - (sTime->hour  * 3600)) / 60 ;
   sTime->second = time_in_s % 60 ;
+  if( time_in_s / 3600 >= 24)
+  {
+    sTime->hour   = (time_in_s / 3600) % 24 ;
+  }
+  else{
+    
+  }
 }
 
 uint32_t UTIL_Time_To_Uint32(Time_t * sTime) 
