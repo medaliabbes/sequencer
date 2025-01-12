@@ -20,15 +20,9 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
-*
-* file  : scheduler.h
-*
-*  Created on: Nov 17, 2024
-*      Author: M.BEN ABBES
-*
 */
-#ifndef INC_SCHEDULER_H_
-#define INC_SCHEDULER_H_
+#ifndef INC_SEQUENCER_H_
+#define INC_SEQUENCER_H_
 
 #include <stdio.h>
 #include <assert.h>
@@ -42,18 +36,18 @@
 #include "scheduler_queue.h"
 
 typedef enum {
-  Sch_Error_Ok               = 0 , /**<No Error>*/
-  Sch_Error_Null_Pointer         , /**<Null Pointer>*/
-  Sch_Error_Invalid_Id           , /**<Event id is invalid>*/
-  Sch_Error_Excided_Max_Events   , /**<No more vents can be added>*/
-  Sch_Error_Null_Repetition      , /**<Number of repetition is 0>*/
+  Seq_Error_Ok               = 0 , /**<No Error>*/
+  Seq_Error_Null_Pointer         , /**<Null Pointer>*/
+  Seq_Error_Invalid_Id           , /**<Event id is invalid>*/
+  Seq_Error_Excided_Max_Events   , /**<No more vents can be added>*/
+  Seq_Error_Null_Repetition      , /**<Number of repetition is 0>*/
   /**<Execution Error>*/
-  Sch_Error_Exc_Event_Deleted    , /**<Event Deleted>*/
-  Sch_Error_Exc_Event_Suspended  , /**<Event Suspended>*/
-  Sch_Error_Exc_Event_Null_Rep   , /**<No more repetition >*/
-  Sch_Error_Exc_Event_Null_cbk   , /**<Null Callback>*/
-  Sch_Error_Core_Failed          , /**<Scheduler will fail no more interrupts>*/
-}Sch_Error_t;
+  Seq_Error_Exc_Event_Deleted    , /**<Event Deleted>*/
+  Seq_Error_Exc_Event_Suspended  , /**<Event Suspended>*/
+  Seq_Error_Exc_Event_Null_Rep   , /**<No more repetition >*/
+  Seq_Error_Exc_Event_Null_cbk   , /**<Null Callback>*/
+  Seq_Error_Core_Failed          , /**<Scheduler will fail no more interrupts>*/
+}Seq_Error_t;
 
 #define  MAX_EVENT_NUMBER  100
 
@@ -66,29 +60,29 @@ typedef enum {
 
 #ifdef DEV
 /**DEVELOPEMENT CODE */
-#define  SCH_ASSERT( __condition__ , error)      assert(__condition__)
-#define  SCH_LOG(...)               printf(__VA_ARGS__)
-#define  SCH_LOG_TIME(st)           printf("%02d/%02d/%02d  %02d:%02d:%02d\n" , \
+#define  SEQ_ASSERT( __condition__ , error)      assert(__condition__)
+#define  SEQ_LOG(...)               printf(__VA_ARGS__)
+#define  SEQ_LOG_TIME(st)           printf("%02d/%02d/%02d  %02d:%02d:%02d\n" , \
                                       st->year , st->month , st->day , \
 								      st->hour , st->minute , st->second )
 #else
 /**PRODUCTION CODE */
-#define  SCH_ASSERT( __condition__ , error)     if(!(__condition__ )) return error ;
-#define  SCH_LOG(...)
-#define  SCH_LOG_TIME(st)
+#define  SEQ_ASSERT( __condition__ , error)     if(!(__condition__ )) return error ;
+#define  SEQ_LOG(...)
+#define  SEQ_LOG_TIME(st)
 
 #endif /*DEV*/
 
 
 typedef int (*EventCallback_t) (void * args) ;
 
-#define  SCH_REPETITION_INF            (0xFFFFFFFF)
-#define  SCH_EVERY_MONTH               (0xFF)
-#define  SCH_EVERY_YEAR                (0xFF)
-#define  SCH_EVERY_DAY                 (0xFF)
-#define  SCH_EVERY_HOUR                (0xFF)
-#define  SCH_EVERY_MINUTE              (0xFF)
-#define  SCH_EVERY_SECOND              (0xFF)
+#define  SEQ_REPETITION_INF            (0xFFFFFFFF)
+#define  SEQ_EVERY_MONTH               (0xFF)
+#define  SEQ_EVERY_YEAR                (0xFF)
+#define  SEQ_EVERY_DAY                 (0xFF)
+#define  SEQ_EVERY_HOUR                (0xFF)
+#define  SEQ_EVERY_MINUTE              (0xFF)
+#define  SEQ_EVERY_SECOND              (0xFF)
 
 /**
  * Event States
@@ -134,29 +128,29 @@ typedef struct
 {
 	GetTime_t  GetTime  ;
 	SetAlarm_t SetAlarm ;
-}SchedulerInitConfig_t;
+}SequencerInitConfig_t;
 
 
-Sch_Error_t    Scheduler_Init(SchedulerInitConfig_t * Config) ;
+Seq_Error_t    Sequencer_Init(SequencerInitConfig_t * Config) ;
 
 /**
  *
  * return event ID
  */
-uint8_t Scheduler_Add_Event_API(EventCallback_t EventHandler , Time_t * StartTime ,
+uint8_t Sequencer_Add_Event_API(EventCallback_t EventHandler , Time_t * StartTime ,
                                 uint32_t Repetetion , uint32_t Periode , Priority_t Priority ,
                                 void * args);
 
-Sch_Error_t    Scheduler_Delete_Event_API(uint8_t id) ;
+Seq_Error_t    Sequencer_Delete_Event_API(uint8_t id) ;
 
-Sch_Error_t    Scheduler_Suspend_Event_API(uint8_t id) ;
+Seq_Error_t    Sequencer_Suspend_Event_API(uint8_t id) ;
 
-Sch_Error_t    Scheduler_Resume_Event_API(uint8_t id)  ;
+Seq_Error_t    Sequencer_Resume_Event_API(uint8_t id)  ;
 
-Sch_Error_t    Scheduler_Process(void) ;
+Seq_Error_t    Sequencer_Process(void) ;
 
-bool          Is_Sch_notification() ;
+bool          Is_Seq_notification() ;
 
-int     Scheduler_Idle(void * args) __attribute__((weak)) ;
+int     Sequencer_Idle(void * args) __attribute__((weak)) ;
 
-#endif /* INC_SCHEDULER_H_ */
+#endif /* INC_SEQUENCER_H_ */
