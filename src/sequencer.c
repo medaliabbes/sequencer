@@ -345,7 +345,7 @@ int Get_Number_Events_To_Execute()
 {
   return  Queue_Get_Size(&EventQueue) ;
 }
-#endif /*ENABLE_UNIT_TEST*/
+#endif /*ENABLE_UNIT_TEST*/ 
 
 __attribute__((weak)) int Sequencer_Idle(void * args)
 {
