@@ -20,13 +20,9 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
-*
-*  platform.h
-*  Created on: Dec 28, 2024
-*      Author: M.BEN ABBES
 */
-#ifndef SCHEDULER_INC_PLATFORM_H_
-#define SCHEDULER_INC_PLATFORM_H_
+#ifndef INC_PLATFORM_H_
+#define INC_PLATFORM_H_
 
 /**
  * @Note  All platform dependent code should be put here
@@ -40,11 +36,12 @@
 #define  RTC_INTERRUPT_HANDLER()       HAL_RTC_AlarmIRQHandler(&hrtc)
 
 extern   RTC_HandleTypeDef hrtc;
-#endif 
+#else
 
 
 #define  RTC_INTERRUPT_ROUTINE        interrupt
 
 #define  RTC_INTERRUPT_HANDLER()       
 
-#endif /* SCHEDULER_INC_PLATFORM_H_ */
+#endif /*defined(USE_HAL_DRIVER)*/
+#endif /* INC_PLATFORM_H_ */
