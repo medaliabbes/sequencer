@@ -20,12 +20,7 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
-*
- * scheduler_utils.c
- *
- *  Created on: Jan 1, 2025
- *      Author: moham
- */
+*/
 #include "sequencer_utils.h"
 
 void     UTIL_Uint32_To_Time(Time_t * sTime , uint32_t time_in_s) 
@@ -101,5 +96,4 @@ void     UTIL_Calculate_Next_Resume_Time(Time_t * resume_time ,Time_t * current_
   resume_time_sec = remaining_to_next_period + current_time_sec ;
 
   UTIL_Uint32_To_Time(resume_time, resume_time_sec) ;
-  //printf("Resume time %d:%d:%d\n\n", resume_time->hour , resume_time->minute , resume_time->second) ;
 }

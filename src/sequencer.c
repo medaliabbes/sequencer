@@ -157,8 +157,6 @@ int  Sequencer_Get_Next_Event_Time(Time_t * NextEventTime)
     }
   }
 
-  Time_t * event_time  = &Events[selected_event].NextExcTime ; 
-
   /**this can be removed **/
   if(selected_event != MAX_EVENT_NUMBER )
   {

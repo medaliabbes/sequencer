@@ -35,20 +35,6 @@
 #include "date_time.h"
 #include "sequencer_queue.h"
 
-typedef enum {
-  Seq_Error_Ok               = 0 , /**<No Error>*/
-  Seq_Error_Null_Pointer         , /**<Null Pointer>*/
-  Seq_Error_Invalid_Id           , /**<Event id is invalid>*/
-  Seq_Error_Excided_Max_Events   , /**<No more vents can be added>*/
-  Seq_Error_Null_Repetition      , /**<Number of repetition is 0>*/
-  /**<Execution Error>*/
-  Seq_Error_Exc_Event_Deleted    , /**<Event Deleted>*/
-  Seq_Error_Exc_Event_Suspended  , /**<Event Suspended>*/
-  Seq_Error_Exc_Event_Null_Rep   , /**<No more repetition >*/
-  Seq_Error_Exc_Event_Null_cbk   , /**<Null Callback>*/
-  Seq_Error_Core_Failed          , /**<Scheduler will fail no more interrupts>*/
-}Seq_Error_t;
-
 #define  MAX_EVENT_NUMBER  100
 
 #define  MAGIC_NUMBER      0xf0175896
@@ -83,6 +69,20 @@ typedef int (*EventCallback_t) (void * args) ;
 #define  SEQ_EVERY_HOUR                (0xFF)
 #define  SEQ_EVERY_MINUTE              (0xFF)
 #define  SEQ_EVERY_SECOND              (0xFF)
+
+typedef enum {
+  Seq_Error_Ok               = 0 , /**<No Error>*/
+  Seq_Error_Null_Pointer         , /**<Null Pointer>*/
+  Seq_Error_Invalid_Id           , /**<Event id is invalid>*/
+  Seq_Error_Excided_Max_Events   , /**<No more vents can be added>*/
+  Seq_Error_Null_Repetition      , /**<Number of repetition is 0>*/
+  /**<Execution Error>*/
+  Seq_Error_Exc_Event_Deleted    , /**<Event Deleted>*/
+  Seq_Error_Exc_Event_Suspended  , /**<Event Suspended>*/
+  Seq_Error_Exc_Event_Null_Rep   , /**<No more repetition >*/
+  Seq_Error_Exc_Event_Null_cbk   , /**<Null Callback>*/
+  Seq_Error_Core_Failed          , /**<Scheduler will fail no more interrupts>*/
+}Seq_Error_t;
 
 /**
  * Event States
