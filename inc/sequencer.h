@@ -60,7 +60,7 @@
 #endif /*DEV*/
 
 
-typedef int (*EventCallback_t) (void * args) ;
+typedef int (*EventCallback_t) (Time_t * ExecutionTime , void * args) ;
 
 #define  SEQ_REPETITION_INF            (0xFFFFFFFF)
 #define  SEQ_EVERY_MONTH               (0xFF)
