@@ -174,7 +174,7 @@ static Seq_Error_t Sequencer_Add_Event(Event_t * Event)
   return Seq_Error_Ok ;
 }
 
-Seq_Error_t Sequencer_Execute_Event(uint8_t id)
+Seq_Error_t Sequencer_Execute_Event(Time_t * ExecutionTime ,  uint8_t id)
 {
   SEQ_ASSERT(id < MAX_EVENT_NUMBER , Sch_Error_Invalid_Id);
 
@@ -204,7 +204,7 @@ Seq_Error_t Sequencer_Execute_Event(uint8_t id)
     return Seq_Error_Exc_Event_Null_cbk ;
   }
   else{
-    Events[id].Callback( Events[id].args ) ;
+    Events[id].Callback(ExecutionTime , Events[id].args ) ;
   }
 
   return Seq_Error_Ok ;
@@ -278,7 +278,7 @@ Seq_Error_t Sequencer_Process()
     /**UTIL_IS_Time_Now Will assure the execution of event at the right time and date */
     if(UTIL_IS_Time_Now(&CurrentTime , &Events[QEvent.id].NextExcTime))
     {
-      Sequencer_Execute_Event(QEvent.id) ;
+      Sequencer_Execute_Event(&CurrentTime , QEvent.id) ;
       Sequencer_Update_Event(QEvent.id) ;
     }
   }
@@ -288,17 +288,16 @@ Seq_Error_t Sequencer_Process()
   if(selected_event == MAX_EVENT_NUMBER)
   {
     SEQ_LOG("No next event is selected \n\n") ;
-    return Seq_Error_Core_Failed ;
   }
   
   uint32_t current_time_s = UTIL_Time_To_Uint32(&CurrentTime) ;
   uint32_t next_time_s    = UTIL_Time_To_Uint32(&NextEventTime) ;
   /**if alarm time (NextEventTime) == current time no interrupt will be triggered */
-//  if(current_time_s >= next_time_s) //Need a date comparison to detect this failure
-//  {
-//    SEQ_LOG("Scheduler will Fail\n");
-//    return Seq_Error_Core_Failed ;
-//  }
+  if(current_time_s >= next_time_s)
+  { /**Should add idle task here**/
+    SEQ_LOG("Scheduler will Fail\n");
+    return Seq_Error_Core_Failed ;
+  }
   SetAlarm(&NextEventTime) ;
   return Seq_Error_Ok ;
 }
@@ -346,7 +345,7 @@ int Get_Number_Events_To_Execute()
 {
   return  Queue_Get_Size(&EventQueue) ;
 }
-#endif /*ENABLE_UNIT_TEST*/ 
+#endif /*ENABLE_UNIT_TEST*/  
 
 __attribute__((weak)) int Sequencer_Idle(void * args)
 {
