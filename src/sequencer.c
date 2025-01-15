@@ -288,16 +288,17 @@ Seq_Error_t Sequencer_Process()
   if(selected_event == MAX_EVENT_NUMBER)
   {
     SEQ_LOG("No next event is selected \n\n") ;
+    return Seq_Error_Core_Failed ;
   }
   
   uint32_t current_time_s = UTIL_Time_To_Uint32(&CurrentTime) ;
   uint32_t next_time_s    = UTIL_Time_To_Uint32(&NextEventTime) ;
   /**if alarm time (NextEventTime) == current time no interrupt will be triggered */
-  if(current_time_s >= next_time_s)
-  { /**Should add idle task here**/
-    SEQ_LOG("Scheduler will Fail\n");
-    return Seq_Error_Core_Failed ;
-  }
+//  if(current_time_s >= next_time_s) //Need a date comparison to detect this failure
+//  {
+//    SEQ_LOG("Scheduler will Fail\n");
+//    return Seq_Error_Core_Failed ;
+//  }
   SetAlarm(&NextEventTime) ;
   return Seq_Error_Ok ;
 }
