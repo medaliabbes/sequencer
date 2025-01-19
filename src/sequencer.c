@@ -340,6 +340,29 @@ Seq_Error_t Scheduler_Resume_Event_API(uint8_t id)
   return Seq_Error_Ok ;
 }
 
+Seq_Error_t    Sequencer_Change_Event_Period_API(uint8_t id , uint32_t period)
+{
+  SEQ_ASSERT(id < MAX_EVENT_NUMBER , Seq_Error_Invalid_Id) ;
+  SEQ_ASSERT(Events[id].MagicNumber == MAGIC_NUMBER , Seq_Error_Invalid_Id);
+  printf("Sequencer_Change_Event_Period_API\n");
+  //assumed that resume time always > current time
+  //resume time - periode == last resume time
+  //last resume time + new period
+  //
+  uint32_t last_resume_time = UTIL_Time_To_Uint32(&Events[id].NextExcTime) - Events[id].Period ;
+  Time_t last_resume_t ;
+  UTIL_Uint32_To_Time(&last_resume_t , last_resume_time) ;
+  printf("last resume time : %02d:%02d:%02d\n\n" , last_resume_t.hour , last_resume_t.minute , last_resume_t.second);
+  uint32_t new_event_time   = last_resume_time + period ;
+  UTIL_Uint32_To_Time(&Events[id].NextExcTime, new_event_time) ;
+  printf("next resume time : %02d:%02d:%02d\n\n" , Events[id].NextExcTime.hour , Events[id].NextExcTime.minute , Events[id].NextExcTime.second);
+  Events[id].Period = period ;
+  Time_t next_event_time ;
+  Sequencer_Get_Next_Event_Time(&next_event_time) ;
+  printf("Sequencer_Change_Event_Period_API End\n\n");
+  return Seq_Error_Ok ;
+}
+
 #ifdef ENABLE_UNIT_TEST
 int Get_Number_Events_To_Execute()
 {

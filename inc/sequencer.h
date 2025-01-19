@@ -147,6 +147,8 @@ Seq_Error_t    Sequencer_Suspend_Event_API(uint8_t id) ;
 
 Seq_Error_t    Sequencer_Resume_Event_API(uint8_t id)  ;
 
+Seq_Error_t    Sequencer_Change_Event_Period_API(uint8_t id , uint32_t period) ;
+
 Seq_Error_t    Sequencer_Process(void) ;
 
 bool          Is_Seq_notification() ;
