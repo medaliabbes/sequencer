@@ -151,7 +151,7 @@ Seq_Error_t    Sequencer_Change_Event_Period_API(uint8_t id , uint32_t period) ;
 
 Seq_Error_t    Sequencer_Process(void) ;
 
-bool          Is_Seq_notification() ;
+bool           Sequencer_Is_notification() ;
 
 int     Sequencer_Idle(void * args) __attribute__((weak)) ;
 

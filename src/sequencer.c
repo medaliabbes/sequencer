@@ -290,19 +290,21 @@ Seq_Error_t Sequencer_Process()
     SEQ_LOG("No next event is selected \n\n") ;
   }
   
-  uint32_t current_time_s = UTIL_Time_To_Uint32(&CurrentTime) ;
-  uint32_t next_time_s    = UTIL_Time_To_Uint32(&NextEventTime) ;
+  //uint32_t current_time_s = UTIL_Time_To_Uint32(&CurrentTime) ;
+  //uint32_t next_time_s    = UTIL_Time_To_Uint32(&NextEventTime) ;
   /**if alarm time (NextEventTime) == current time no interrupt will be triggered */
-  if(current_time_s >= next_time_s)
-  { /**Should add idle task here**/
-    SEQ_LOG("Scheduler will Fail\n");
-    return Seq_Error_Core_Failed ;
-  }
+/**if event next time is 00:00:00 and current time is 23:00:00 next block
+ * cause a bug*/
+//  if(current_time_s >= next_time_s)
+//  { /**Should add idle task here**/
+//    SEQ_LOG("Scheduler will Fail\n");
+//    return Seq_Error_Core_Failed ;
+//  }
   SetAlarm(&NextEventTime) ;
   return Seq_Error_Ok ;
 }
 
-bool Is_Seq_notification() 
+bool Sequencer_Is_notification()
 {
   if(notification == RTC_INTERRUPT_NOTIF)
 	  return true ;
@@ -340,11 +342,15 @@ Seq_Error_t Scheduler_Resume_Event_API(uint8_t id)
   return Seq_Error_Ok ;
 }
 
+/**
+ * Note : this function will get next event execution time wrong if its called from
+ * the event stack
+ */
 Seq_Error_t    Sequencer_Change_Event_Period_API(uint8_t id , uint32_t period)
 {
   SEQ_ASSERT(id < MAX_EVENT_NUMBER , Seq_Error_Invalid_Id) ;
   SEQ_ASSERT(Events[id].MagicNumber == MAGIC_NUMBER , Seq_Error_Invalid_Id);
-  printf("Sequencer_Change_Event_Period_API\n");
+
   //assumed that resume time always > current time
   //resume time - periode == last resume time
   //last resume time + new period
@@ -352,14 +358,13 @@ Seq_Error_t    Sequencer_Change_Event_Period_API(uint8_t id , uint32_t period)
   uint32_t last_resume_time = UTIL_Time_To_Uint32(&Events[id].NextExcTime) - Events[id].Period ;
   Time_t last_resume_t ;
   UTIL_Uint32_To_Time(&last_resume_t , last_resume_time) ;
-  printf("last resume time : %02d:%02d:%02d\n\n" , last_resume_t.hour , last_resume_t.minute , last_resume_t.second);
   uint32_t new_event_time   = last_resume_time + period ;
   UTIL_Uint32_To_Time(&Events[id].NextExcTime, new_event_time) ;
-  printf("next resume time : %02d:%02d:%02d\n\n" , Events[id].NextExcTime.hour , Events[id].NextExcTime.minute , Events[id].NextExcTime.second);
+
   Events[id].Period = period ;
   Time_t next_event_time ;
   Sequencer_Get_Next_Event_Time(&next_event_time) ;
-  printf("Sequencer_Change_Event_Period_API End\n\n");
+
   return Seq_Error_Ok ;
 }
 
