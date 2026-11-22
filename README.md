@@ -103,6 +103,16 @@ while(1)
     Sequencer_Process() ;
   }
 ```
+
+### building using CMake 
+ generating make file 
+ ``` sh
+ cmake -S . -B build-make -G "Unix Makefiles" -DCMAKE_C_COMPILER=C:\cygwin64\bin\gcc.exe
+ ```
+ building using make 
+ ``` sh
+ make -C build-make
+ ```
 ## License
 This project is licensed under the MIT License. See the **LICENSE** file for details
 
